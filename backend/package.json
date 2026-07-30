@@ -2,6 +2,7 @@
   "name": "csi-kare-ml-backend",
   "version": "1.0.0",
   "description": "Node.js Express Backend REST API for CSI KARE Machine Learning Pipeline Portal (Deployable on Render)",
+  "license": "MIT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
