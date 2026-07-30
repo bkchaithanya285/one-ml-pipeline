@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: csi-kare-ml-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dmst2wexn
+      - key: CLOUDINARY_API_KEY
+        value: 922133823258997
+      - key: CLOUDINARY_API_SECRET
+        value: yMevYZk0VlecuTw1eR9ddhy05dY
+      - key: FIREBASE_PROJECT_ID
+        value: one-ml-pipe

@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isStudentEmail() {
+      return isAuthenticated() && request.auth.token.email.endsWith('@klu.ac.in');
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'admin@klu.ac.in'
+      );
+    }
+
+    // Settings Collection: Public read, Admin write
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Registrations Collection: 
+    // Students can create only one registration record, cannot edit or delete.
+    // Admins have full access.
+    match /registrations/{regId} {
+      allow read: if true;
+      allow create: if isStudentEmail() && !exists(/databases/$(database)/documents/registrations/$(regId));
+      allow update, delete: if isAdmin();
+    }
+
+    // Admins Collection: Only Admins can read/write
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Users Collection: Authenticated users can read/write their own document
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}
