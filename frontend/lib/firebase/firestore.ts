@@ -148,6 +148,7 @@ function saveLocalSessions(sessions: AttendanceSession[]) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+    window.dispatchEvent(new CustomEvent("csi_kare_sessions_updated", { detail: sessions }));
   } catch (e) {
     console.error("Local storage save sessions error", e);
   }
@@ -536,23 +537,67 @@ export async function toggleAttendanceSessionStatus(sessionId: string): Promise<
   }
 }
 
+function mergeSessions(remote: AttendanceSession[], local: AttendanceSession[]): AttendanceSession[] {
+  const map = new Map<string, AttendanceSession>();
+  local.forEach((s) => map.set(s.id, { ...s, records: [...(s.records || [])] }));
+  remote.forEach((s) => {
+    const existing = map.get(s.id);
+    if (!existing) {
+      map.set(s.id, { ...s, records: [...(s.records || [])] });
+    } else {
+      const recordMap = new Map<string, AttendanceRecord>();
+      (existing.records || []).forEach((r) => {
+        const key = (r.registerNumber || r.regId || r.name || "").toLowerCase().trim();
+        if (key) recordMap.set(key, r);
+      });
+      (s.records || []).forEach((r) => {
+        const key = (r.registerNumber || r.regId || r.name || "").toLowerCase().trim();
+        if (key) recordMap.set(key, r);
+      });
+      map.set(s.id, {
+        ...existing,
+        ...s,
+        records: Array.from(recordMap.values()),
+      });
+    }
+  });
+  return Array.from(map.values());
+}
+
 export function subscribeAttendanceSessions(
   callback: (sessions: AttendanceSession[]) => void
 ) {
+  const handleLocalUpdate = (e: Event) => {
+    const customEv = e as CustomEvent;
+    if (customEv.detail) {
+      callback(customEv.detail);
+    } else {
+      callback(getLocalSessions());
+    }
+  };
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("csi_kare_sessions_updated", handleLocalUpdate);
+  }
+
+  let unsubFirestore = () => {};
+
   try {
     const colRef = collection(db, "attendance_sessions");
-    return onSnapshot(
+    unsubFirestore = onSnapshot(
       colRef,
       (snapshot) => {
+        const localList = getLocalSessions();
         if (!snapshot.empty) {
-          const list: AttendanceSession[] = [];
+          const remoteList: AttendanceSession[] = [];
           snapshot.forEach((docSnap) => {
             const data = docSnap.data() as AttendanceSession;
-            list.push({ ...data, id: docSnap.id });
+            remoteList.push({ ...data, id: docSnap.id });
           });
-          callback(list);
+          const merged = mergeSessions(remoteList, localList);
+          callback(merged);
         } else {
-          callback(getLocalSessions());
+          callback(localList);
         }
       },
       () => {
@@ -561,20 +606,28 @@ export function subscribeAttendanceSessions(
     );
   } catch (e) {
     callback(getLocalSessions());
-    return () => {};
   }
+
+  return () => {
+    if (typeof window !== "undefined") {
+      window.removeEventListener("csi_kare_sessions_updated", handleLocalUpdate);
+    }
+    unsubFirestore();
+  };
 }
 
 export async function markAttendanceInSession(
   sessionId: string,
   regRecord: { regId: string; registerNumber: string; name: string }
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; updatedSession?: AttendanceSession }> {
   const sessions = getLocalSessions();
-  const session = sessions.find((s) => s.id === sessionId);
+  const sessionIndex = sessions.findIndex((s) => s.id === sessionId);
 
-  if (!session) {
+  if (sessionIndex === -1) {
     return { success: false, message: "Attendance Session not found." };
   }
+
+  const session = sessions[sessionIndex];
 
   if (session.status === "closed") {
     return {
@@ -583,14 +636,25 @@ export async function markAttendanceInSession(
     };
   }
 
-  const alreadyMarked = session.records.some(
-    (r) => r.regId === regRecord.regId || r.registerNumber === regRecord.registerNumber
-  );
+  const cleanRegNo = (regRecord.registerNumber || "").toLowerCase().trim();
+  const cleanId = (regRecord.regId || "").toLowerCase().trim();
+  const cleanName = (regRecord.name || "").toLowerCase().trim();
+
+  const alreadyMarked = (session.records || []).some((r) => {
+    const rRegNo = (r.registerNumber || "").toLowerCase().trim();
+    const rId = (r.regId || "").toLowerCase().trim();
+    const rName = (r.name || "").toLowerCase().trim();
+    return (
+      (cleanRegNo && rRegNo === cleanRegNo) ||
+      (cleanId && rId === cleanId) ||
+      (cleanName && rName === cleanName)
+    );
+  });
 
   if (alreadyMarked) {
     return {
       success: false,
-      message: `Student (${regRecord.registerNumber}) ALREADY marked present for this session.`,
+      message: `Student (${regRecord.name} - ${regRecord.registerNumber}) is ALREADY marked PRESENT in '${session.sessionName}'.`,
     };
   }
 
@@ -601,17 +665,20 @@ export async function markAttendanceInSession(
     scannedAt: new Date().toISOString(),
   };
 
+  session.records = session.records || [];
   session.records.unshift(newRecord);
+  sessions[sessionIndex] = { ...session };
   saveLocalSessions(sessions);
 
   try {
     const docRef = doc(db, "attendance_sessions", sessionId);
-    await updateDoc(docRef, { records: session.records });
+    await setDoc(docRef, session, { merge: true });
   } catch (e) {}
 
   return {
     success: true,
     message: `Attendance MARKED PRESENT for ${regRecord.name} (${regRecord.registerNumber}).`,
+    updatedSession: session,
   };
 }
 

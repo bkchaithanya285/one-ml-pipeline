@@ -62,6 +62,14 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
   // View Filter: "all" | "present" | "absent"
   const [rosterFilter, setRosterFilter] = useState<"all" | "present" | "absent">("present");
 
+  const [markedToast, setMarkedToast] = useState<{
+    studentName: string;
+    registerNumber: string;
+    department: string;
+    timestamp: string;
+    sessionId: string;
+  } | null>(null);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameId = useRef<number | null>(null);
@@ -140,13 +148,15 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
       if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
         const ctx = canvas.getContext("2d");
         if (ctx) {
-          canvas.height = video.videoHeight;
-          canvas.width = video.videoWidth;
+          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+          }
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
+            inversionAttempts: "attemptBoth",
           });
 
           if (code && code.data) {
@@ -154,7 +164,7 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
             if (
               !lastScannedCode.current ||
               lastScannedCode.current.code !== code.data ||
-              now - lastScannedCode.current.time > 2500
+              now - lastScannedCode.current.time > 2000
             ) {
               lastScannedCode.current = { code: code.data, time: now };
               handleProcessScan(code.data);
@@ -197,6 +207,60 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     await toggleAttendanceSessionStatus(currentSession.id);
   };
 
+  const findStudentByCode = (rawCode: string): Registration | undefined => {
+    const cleanInput = rawCode.trim();
+    if (!cleanInput) return undefined;
+
+    let targetRegNo = "";
+    let targetId = "";
+    let targetEmail = "";
+    let targetName = "";
+
+    if (cleanInput.includes("|") || cleanInput.includes("REG:") || cleanInput.includes("ID:")) {
+      const parts = cleanInput.split("|");
+      for (const p of parts) {
+        const trimmed = p.trim();
+        if (trimmed.toUpperCase().startsWith("REG:")) {
+          targetRegNo = trimmed.substring(4).trim();
+        } else if (trimmed.toUpperCase().startsWith("ID:")) {
+          targetId = trimmed.substring(3).trim();
+        } else if (trimmed.toUpperCase().startsWith("NAME:")) {
+          targetName = trimmed.substring(5).trim();
+        } else if (trimmed.toUpperCase().startsWith("EMAIL:")) {
+          targetEmail = trimmed.substring(6).trim();
+        }
+      }
+    }
+
+    const searchCandidates = [
+      targetRegNo,
+      targetId,
+      targetEmail,
+      targetName,
+      cleanInput.replace(/^CSI-KARE-ATTENDANCE\|/i, "").trim(),
+      cleanInput,
+    ]
+      .map((s) => s.toLowerCase().trim())
+      .filter((s) => s.length > 0);
+
+    return registrations.find((r) => {
+      const regNo = (r.registerNumber || "").toLowerCase().trim();
+      const id = (r.id || "").toLowerCase().trim();
+      const email = (r.email || "").toLowerCase().trim();
+      const name = (r.name || "").toLowerCase().trim();
+      const txId = (r.transactionId || "").toLowerCase().trim();
+
+      return searchCandidates.some(
+        (cand) =>
+          cand === regNo ||
+          cand === id ||
+          cand === email ||
+          cand === name ||
+          cand === txId
+      );
+    });
+  };
+
   const handleProcessScan = async (rawCode: string) => {
     if (!currentSession) {
       setFeedback({
@@ -222,27 +286,13 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     const cleanInput = rawCode.trim();
     if (!cleanInput) return;
 
-    let targetRegNo = cleanInput;
-    if (cleanInput.includes("REG:")) {
-      const parts = cleanInput.split("|");
-      const regPart = parts.find((p) => p.startsWith("REG:"));
-      if (regPart) {
-        targetRegNo = regPart.replace("REG:", "").trim();
-      }
-    }
-
-    const student = registrations.find(
-      (r) =>
-        r.registerNumber.toLowerCase().trim() === targetRegNo.toLowerCase().trim() ||
-        r.id.toLowerCase().trim() === targetRegNo.toLowerCase().trim() ||
-        r.email.toLowerCase().trim() === targetRegNo.toLowerCase().trim()
-    );
+    const student = findStudentByCode(cleanInput);
 
     if (!student) {
       setFeedback({
         type: "error",
         title: "UNREGISTERED STUDENT",
-        message: `No registration record found for '${targetRegNo}'.`,
+        message: `No registration record found matching '${cleanInput}'.`,
       });
       playAudioBeep("error");
       setScanInput("");
@@ -256,18 +306,33 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     });
 
     if (res.success) {
+      if (res.updatedSession) {
+        setSessions((prev) =>
+          prev.map((s) => (s.id === res.updatedSession!.id ? res.updatedSession! : s))
+        );
+      }
       setFeedback({
         type: "success",
         title: "ATTENDANCE VERIFIED & MARKED PRESENT",
         message: `${student.name} (${student.registerNumber}) • ${student.department}`,
       });
+      setMarkedToast({
+        studentName: student.name,
+        registerNumber: student.registerNumber,
+        department: `${student.department} (${student.year})`,
+        timestamp: new Date().toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+        sessionId: currentSession.id,
+      });
       playAudioBeep("success");
-      // Auto-switch filter tab to Present so admin sees newly added student immediately
       setRosterFilter("present");
     } else {
       setFeedback({
         type: "warning",
-        title: "DUPLICATE SCAN",
+        title: "ALREADY MARKED PRESENT",
         message: res.message,
       });
       playAudioBeep("error");
@@ -305,17 +370,19 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
   const presentPercentage =
     totalRegistered > 0 ? Math.round((presentCount / totalRegistered) * 100) : 0;
 
-  // Build 100% Comprehensive Present Lookup Set (matches on Reg No OR Reg ID)
+  // Build 100% Comprehensive Present Lookup Set (matches on Reg No, Reg ID, or Name)
   const presentKeysSet = new Set<string>();
   sessionRecords.forEach((rec) => {
     if (rec.registerNumber) presentKeysSet.add(rec.registerNumber.toLowerCase().trim());
     if (rec.regId) presentKeysSet.add(rec.regId.toLowerCase().trim());
+    if (rec.name) presentKeysSet.add(rec.name.toLowerCase().trim());
   });
 
   const filteredRoster = registrations.filter((reg) => {
     const isPresent =
-      presentKeysSet.has(reg.registerNumber.toLowerCase().trim()) ||
-      presentKeysSet.has(reg.id.toLowerCase().trim());
+      (reg.registerNumber && presentKeysSet.has(reg.registerNumber.toLowerCase().trim())) ||
+      (reg.id && presentKeysSet.has(reg.id.toLowerCase().trim())) ||
+      (reg.name && presentKeysSet.has(reg.name.toLowerCase().trim()));
 
     if (rosterFilter === "present") return isPresent;
     if (rosterFilter === "absent") return !isPresent;
@@ -369,6 +436,42 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto my-4 space-y-5 pr-1">
+          {/* FLOATING HIGH-VISIBILITY MARKED PRESENT TOAST NOTIFICATION */}
+          <AnimatePresence>
+            {markedToast && (
+              <motion.div
+                initial={{ opacity: 0, y: -15, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15, scale: 0.95 }}
+                className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-black shadow-[0_0_40px_rgba(16,185,129,0.7)] flex items-center justify-between font-mono font-bold text-xs border border-emerald-300 animate-pulse"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="p-2.5 rounded-xl bg-black/25 text-white">
+                    <CheckCircle2 className="w-7 h-7 text-emerald-200 animate-bounce" />
+                  </div>
+                  <div>
+                    <div className="font-orbitron font-black text-sm tracking-wider text-white flex items-center space-x-2">
+                      <span className="bg-black/30 px-2 py-0.5 rounded-md text-emerald-200 text-xs">
+                        MARKED PRESENT
+                      </span>
+                      <span>{markedToast.studentName}</span>
+                    </div>
+                    <div className="text-black/90 text-xs font-mono mt-0.5">
+                      Reg No: <span className="bg-black/20 px-1.5 py-0.5 rounded text-white">{markedToast.registerNumber}</span> • {markedToast.department} • <span className="text-emerald-950 font-bold">{markedToast.timestamp}</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMarkedToast(null)}
+                  className="px-3 py-1.5 rounded-xl bg-black/30 hover:bg-black/50 text-white text-[10px] font-orbitron font-bold tracking-wider transition-colors cursor-pointer ml-3 flex-shrink-0"
+                >
+                  DISMISS ✕
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* SESSION SELECTOR & STATUS BAR */}
           <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 space-y-4">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
