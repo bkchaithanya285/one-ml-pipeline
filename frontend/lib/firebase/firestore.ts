@@ -438,6 +438,25 @@ export async function rejectRegistration(
 }
 
 /**
+ * Update full registration record details (Admin Edit)
+ */
+export async function updateRegistrationDetails(
+  id: string,
+  updates: Partial<Registration>
+): Promise<void> {
+  try {
+    const docRef = doc(db, "registrations", id);
+    await updateDoc(docRef, updates);
+  } catch (e) {}
+
+  const localRegs = getLocalRegistrations();
+  const updated = localRegs.map((r) =>
+    r.id === id ? { ...r, ...updates } : r
+  );
+  saveLocalRegistrations(updated);
+}
+
+/**
  * Delete Registration permanently
  */
 export async function deleteRegistration(id: string): Promise<void> {

@@ -17,9 +17,11 @@ import {
   X,
   AlertOctagon,
   Hash,
+  Edit,
 } from "lucide-react";
 import { Registration } from "@/types";
 import { exportToExcel, exportToCSV } from "@/lib/exportUtils";
+import { EditRegistrationModal } from "./EditRegistrationModal";
 
 interface RegistrationsTableProps {
   registrations: Registration[];
@@ -27,6 +29,7 @@ interface RegistrationsTableProps {
   onReject: (id: string, reason: string) => void;
   onDelete: (id: string) => void;
   onDeleteAll: () => void;
+  onEdit: (id: string, updates: Partial<Registration>) => Promise<void>;
 }
 
 export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
@@ -35,6 +38,7 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
   onReject,
   onDelete,
   onDeleteAll,
+  onEdit,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -47,6 +51,7 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
   const [rejectingRegId, setRejectingRegId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [deletingRegId, setDeletingRegId] = useState<string | null>(null);
+  const [editingReg, setEditingReg] = useState<Registration | null>(null);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
 
   const filteredRegistrations = useMemo(() => {
@@ -295,6 +300,14 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
                         )}
 
                         <button
+                          onClick={() => setEditingReg(reg)}
+                          title="Edit Registration Details"
+                          className="p-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black border border-cyan-500/40 transition-colors cursor-pointer"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+
+                        <button
                           onClick={() => setDeletingRegId(reg.id)}
                           title="Delete Record"
                           className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/40 transition-colors cursor-pointer"
@@ -485,6 +498,16 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Edit Registration Modal */}
+      {editingReg && (
+        <EditRegistrationModal
+          isOpen={!!editingReg}
+          registration={editingReg}
+          onClose={() => setEditingReg(null)}
+          onSave={onEdit}
+        />
+      )}
     </div>
   );
 };

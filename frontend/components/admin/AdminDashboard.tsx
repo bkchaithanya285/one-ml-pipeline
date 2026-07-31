@@ -26,6 +26,7 @@ import {
   deleteRegistration,
   deleteAllRegistrations,
   updateEventSettings,
+  updateRegistrationDetails,
 } from "@/lib/firebase/firestore";
 
 interface AdminDashboardProps {
@@ -241,6 +242,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSignOut }) => 
             onReject={rejectRegistration}
             onDelete={deleteRegistration}
             onDeleteAll={deleteAllRegistrations}
+            onEdit={updateRegistrationDetails}
           />
         </div>
       </div>
