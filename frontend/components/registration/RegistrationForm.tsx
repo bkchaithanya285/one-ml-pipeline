@@ -9,6 +9,7 @@ import { User, UserCheck, AlertTriangle, Phone, Building2, Calendar, Lock } from
 import { DepartmentOption, YearOption, Registration } from "@/types";
 import { checkRegisterNumberExists, getRegistrationByEmailOrUid } from "@/lib/firebase/firestore";
 import { signInWithGoogleDomain } from "@/lib/firebase/auth";
+import { cleanStudentName } from "@/lib/stringUtils";
 
 const formSchema = z.object({
   fullName: z
@@ -81,7 +82,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     if (initialGoogleUser) {
       setGoogleUser(initialGoogleUser);
       if (initialGoogleUser.displayName) {
-        setValue("fullName", initialGoogleUser.displayName.toUpperCase(), { shouldValidate: true });
+        const cleanedName = cleanStudentName(initialGoogleUser.displayName).toUpperCase();
+        setValue("fullName", cleanedName, { shouldValidate: true });
       }
     }
   }, [initialGoogleUser, setValue]);
@@ -115,9 +117,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         displayName: user.displayName || "",
       });
 
-      // Auto-prefill Google Display Name in UPPERCASE if available
+      // Auto-prefill Google Display Name in UPPERCASE if available (cleaned of year/dept suffixes)
       if (user.displayName) {
-        setValue("fullName", user.displayName.toUpperCase(), { shouldValidate: true });
+        const cleanedName = cleanStudentName(user.displayName).toUpperCase();
+        setValue("fullName", cleanedName, { shouldValidate: true });
       }
     }
   };

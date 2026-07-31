@@ -29,6 +29,7 @@ import {
   DEFAULT_SETTINGS,
 } from "@/lib/firebase/firestore";
 import { subscribeAuthState, signInWithGoogleDomain } from "@/lib/firebase/auth";
+import { cleanStudentName } from "@/lib/stringUtils";
 import { Registration, EventSettings } from "@/types";
 
 type Step = "landing" | "instructions" | "form" | "verify" | "payment" | "success" | "existingRecord";
@@ -173,7 +174,7 @@ export default function Home() {
       setGoogleAuthUser({
         email: user.email,
         uid: user.uid,
-        displayName: user.displayName || "",
+        displayName: cleanStudentName(user.displayName || ""),
       });
       setCurrentStep("instructions");
     }
