@@ -81,8 +81,8 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
 
           {/* Antenna */}
           <line x1="100" y1="55" x2="100" y2="35" stroke="#00f3ff" strokeWidth="2" />
-          <circle cx="100" cy="30" r="5" fill="#a855f7" className="animate-ping" />
-          <circle cx="100" cy="30" r="5" fill="#00f3ff" />
+          <circle cx="100" cy="30" r="5" fill="#00f3ff" className="animate-pulse drop-shadow-[0_0_8px_#00f3ff]" />
+          <circle cx="100" cy="30" r="2.5" fill="#ffffff" />
 
           {/* Gradients */}
           <defs>
@@ -181,8 +181,8 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
 
         {/* Chest Arc Reactor Core */}
         <circle cx="120" cy="160" r="14" fill="#030712" stroke="#3b82f6" strokeWidth="2" />
-        <circle cx="120" cy="160" r="8" fill="#00f3ff" className="animate-ping" />
-        <circle cx="120" cy="160" r="8" fill="#00f3ff" />
+        <circle cx="120" cy="160" r="8" fill="#00f3ff" className="animate-pulse drop-shadow-[0_0_8px_#00f3ff]" />
+        <circle cx="120" cy="160" r="4" fill="#ffffff" />
 
         {/* Neck */}
         <rect x="105" y="105" width="30" height="25" rx="4" fill="#1e1b4b" stroke="#00f3ff" strokeWidth="1" />

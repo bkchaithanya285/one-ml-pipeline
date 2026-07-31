@@ -76,7 +76,7 @@ export default function Home() {
     });
 
     // Asynchronously restore session without blocking landing page render
-    const checkUserSession = async (userEmail?: string, userUid?: string) => {
+    const checkUserSession = async (userEmail?: string, userUid?: string, userDisplayName?: string) => {
       const emailToCheck =
         userEmail || (typeof window !== "undefined" ? localStorage.getItem(LOCAL_STORAGE_STUDENT_EMAIL) || "" : "");
 
@@ -84,16 +84,19 @@ export default function Home() {
         const record = await getRegistrationByEmailOrUid(emailToCheck, userUid || "");
         if (record) {
           setExistingRecord(record);
-          setCurrentStep("existingRecord");
           if (typeof window !== "undefined") {
             localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
           }
+          setCurrentStep("existingRecord");
         } else {
           setExistingRecord(null);
-          if (typeof window !== "undefined") {
-            localStorage.removeItem(LOCAL_STORAGE_STUDENT_EMAIL);
+          if (userEmail && userUid) {
+            setGoogleAuthUser({
+              email: userEmail,
+              uid: userUid,
+              displayName: cleanStudentName(userDisplayName || ""),
+            });
           }
-          setCurrentStep((step) => (step === "existingRecord" ? "landing" : step));
         }
       }
     };
@@ -109,7 +112,7 @@ export default function Home() {
     // Firebase auth listener
     const unsubAuth = subscribeAuthState((user) => {
       if (user && user.email) {
-        checkUserSession(user.email, user.uid);
+        checkUserSession(user.email, user.uid, user.displayName || "");
       }
     });
 
@@ -161,6 +164,13 @@ export default function Home() {
     }
 
     if (user && user.email) {
+      const authUser = {
+        email: user.email,
+        uid: user.uid,
+        displayName: cleanStudentName(user.displayName || ""),
+      };
+      setGoogleAuthUser(authUser);
+
       const record = await getRegistrationByEmailOrUid(user.email, user.uid);
       if (record) {
         setExistingRecord(record);
@@ -171,11 +181,7 @@ export default function Home() {
         return;
       }
 
-      setGoogleAuthUser({
-        email: user.email,
-        uid: user.uid,
-        displayName: cleanStudentName(user.displayName || ""),
-      });
+      // Direct instant redirection to instructions/form
       setCurrentStep("instructions");
     }
   };
