@@ -110,6 +110,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         phone: formData.phone,
         department: formData.department,
         year: formData.year,
+        section: formData.section,
+        residency: formData.residency,
         transactionId: transactionId.trim().toUpperCase(),
         paymentScreenshot: cloudinaryResult.secureUrl,
         cloudinaryPublicId: cloudinaryResult.publicId,

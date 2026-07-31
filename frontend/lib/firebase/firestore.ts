@@ -41,6 +41,8 @@ const INITIAL_MOCK_REGISTRATIONS: Registration[] = Array.from({ length: 103 }).m
     phone: `98765${String(10000 + i).slice(0, 5)}`,
     department: i % 2 === 0 ? "CSE" : "ECE",
     year: i % 2 === 0 ? "III Year" : "II Year",
+    section: i % 2 === 0 ? "24S01" : "A",
+    residency: i % 2 === 0 ? "Hosteller" : "Day Scholar",
     transactionId: `UPI${428000000000 + i}`,
     paymentScreenshot:
       "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80",
