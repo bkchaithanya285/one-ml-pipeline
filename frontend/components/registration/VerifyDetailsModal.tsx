@@ -65,13 +65,18 @@ export const VerifyDetailsModal: React.FC<VerifyDetailsModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <span className="text-gray-400 text-[10px] font-orbitron uppercase block">Department</span>
-            <span className="text-sm text-gray-200 block">{data.department}</span>
+            <span className="text-gray-400 text-[10px] font-orbitron uppercase block">Department & Year</span>
+            <span className="text-sm text-gray-200 block">{data.department} ({data.year})</span>
           </div>
 
           <div className="space-y-1">
-            <span className="text-gray-400 text-[10px] font-orbitron uppercase block">Academic Year</span>
-            <span className="text-sm text-gray-200 block">{data.year}</span>
+            <span className="text-gray-400 text-[10px] font-orbitron uppercase block">Section</span>
+            <span className="text-sm font-bold text-cyan-300 block">{data.section}</span>
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-gray-400 text-[10px] font-orbitron uppercase block">Residency Status</span>
+            <span className="text-sm text-gray-200 block">{data.residency}</span>
           </div>
 
           <div className="sm:col-span-2 pt-3 border-t border-slate-800 flex items-center justify-between">

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion } from "framer-motion";
 import { User, UserCheck, AlertTriangle, Phone, Building2, Calendar, Lock } from "lucide-react";
-import { DepartmentOption, YearOption, Registration } from "@/types";
+import { DepartmentOption, YearOption, ResidencyOption, Registration } from "@/types";
 import { checkRegisterNumberExists, getRegistrationByEmailOrUid } from "@/lib/firebase/firestore";
 import { signInWithGoogleDomain } from "@/lib/firebase/auth";
 
@@ -35,6 +35,13 @@ const formSchema = z.object({
   ),
   year: z.enum(["II Year", "III Year", "IV Year"] as [YearOption, ...YearOption[]], {
     required_error: "Please select your academic year.",
+  }),
+  section: z
+    .string()
+    .min(1, "Please enter your section (e.g. 24S01 or A).")
+    .transform((val) => val.toUpperCase()),
+  residency: z.enum(["Hosteller", "Day Scholar"] as [ResidencyOption, ...ResidencyOption[]], {
+    required_error: "Please select your residency status.",
   }),
 });
 
@@ -84,6 +91,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   }, [initialGoogleUser]);
 
   const fullNameValue = watch("fullName") || "";
+  const sectionValue = watch("section") || "";
 
   // Handle Google Sign-In
   const handleGoogleAuth = async () => {
@@ -118,6 +126,12 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uppercaseVal = e.target.value.toUpperCase();
     setValue("fullName", uppercaseVal, { shouldValidate: true });
+  };
+
+  // Convert section to BLOCK LETTERS (UPPERCASE) automatically as user types
+  const handleSectionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uppercaseVal = e.target.value.toUpperCase();
+    setValue("section", uppercaseVal, { shouldValidate: true });
   };
 
   const onSubmitForm = async (data: z.infer<typeof formSchema>) => {
@@ -307,7 +321,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             )}
           </div>
 
-          {/* Department & Year Grid */}
+          {/* Department, Year, Section & Residency Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-orbitron font-semibold text-gray-300 uppercase tracking-wider flex items-center space-x-1">
@@ -347,6 +361,42 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               </select>
               {errors.year && (
                 <p className="text-xs text-red-400 font-mono mt-1">{errors.year.message}</p>
+              )}
+            </div>
+            
+            {/* Section (BLOCK LETTERS) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-orbitron font-semibold text-gray-300 uppercase tracking-wider flex items-center justify-between">
+                <span>Section</span>
+                <span className="text-[10px] text-cyan-400 font-mono">BLOCK LETTERS</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 24S01 or A"
+                value={sectionValue}
+                onChange={handleSectionChange}
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-400 text-gray-100 font-mono uppercase text-sm transition-all"
+              />
+              {errors.section && (
+                <p className="text-xs text-red-400 font-mono mt-1">{errors.section.message}</p>
+              )}
+            </div>
+
+            {/* Residency Status (Hosteller / Day Scholar) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-orbitron font-semibold text-gray-300 uppercase tracking-wider">
+                Residency Status
+              </label>
+              <select
+                {...register("residency")}
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-cyan-400 text-gray-100 font-sans text-sm transition-all"
+              >
+                <option value="">Select Residency</option>
+                <option value="Hosteller">Hosteller</option>
+                <option value="Day Scholar">Day Scholar</option>
+              </select>
+              {errors.residency && (
+                <p className="text-xs text-red-400 font-mono mt-1">{errors.residency.message}</p>
               )}
             </div>
           </div>

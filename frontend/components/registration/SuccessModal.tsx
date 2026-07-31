@@ -113,8 +113,12 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
               <span className="font-bold text-white text-sm">{formData.registerNumber}</span>
             </div>
             <div>
-              <span className="text-gray-500 text-[10px] block uppercase font-orbitron">Department</span>
-              <span>{formData.department} ({formData.year})</span>
+              <span className="text-gray-500 text-[10px] block uppercase font-orbitron">Department & Year</span>
+              <span>{formData.department} ({formData.year}) • Sec: <strong>{formData.section}</strong></span>
+            </div>
+            <div>
+              <span className="text-gray-500 text-[10px] block uppercase font-orbitron">Residency Status</span>
+              <span className="text-gray-300">{formData.residency}</span>
             </div>
           </div>
         </div>

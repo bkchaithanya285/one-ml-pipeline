@@ -146,6 +146,16 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
                 <span className="font-bold text-white text-sm block">{registration.registerNumber}</span>
               </div>
               <div>
+                <span className="text-gray-500 text-[10px] block uppercase font-orbitron">Department & Section</span>
+                <span className="text-gray-200 block text-xs">
+                  {registration.department} ({registration.year}) • Sec: <strong className="text-cyan-300">{registration.section || "N/A"}</strong>
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 text-[10px] block uppercase font-orbitron">Residency Status</span>
+                <span className="text-gray-300 block text-xs">{registration.residency || "N/A"}</span>
+              </div>
+              <div>
                 <span className="text-gray-500 text-[10px] block uppercase font-orbitron">Transaction / UTR ID</span>
                 <span className="font-bold text-amber-300 text-xs block">{registration.transactionId || "N/A"}</span>
               </div>

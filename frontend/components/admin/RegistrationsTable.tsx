@@ -220,8 +220,10 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div>{reg.department}</div>
-                      <div className="text-[10px] text-gray-400">{reg.year}</div>
+                      <div className="font-bold text-gray-100">{reg.department} ({reg.year})</div>
+                      <div className="text-[10px] text-cyan-400">
+                        Sec: <span className="font-bold text-white">{reg.section || "N/A"}</span> • {reg.residency || "N/A"}
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-4">

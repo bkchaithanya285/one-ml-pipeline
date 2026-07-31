@@ -11,6 +11,8 @@ export interface Registration {
   phone: string;
   department: string;
   year: string;
+  residency?: string; // "Hosteller" | "Day Scholar"
+  section?: string; // UPPERCASE (e.g. "24S01" or "A")
   transactionId: string; // UPI / UTR Transaction Reference Number
   paymentScreenshot: string;
   cloudinaryPublicId: string;
@@ -19,6 +21,8 @@ export interface Registration {
   rejectionReason?: string;
   createdAt: string;
 }
+
+export type ResidencyOption = "Hosteller" | "Day Scholar";
 
 export interface AttendanceRecord {
   regId: string;
