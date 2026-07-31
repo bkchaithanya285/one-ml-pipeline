@@ -186,12 +186,25 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
           <div className="space-y-2">
             {sessions.map((s) => {
               const statusStr = s.status || "open";
+              const isClosed = statusStr === "closed";
               const recordsList = s.records || [];
-              const record = recordsList.find(
-                (r) =>
-                  r.regId === registration.id ||
-                  r.registerNumber.toLowerCase() === registration.registerNumber.toLowerCase()
-              );
+
+              const regNoClean = (registration.registerNumber || "").toLowerCase().trim();
+              const idClean = (registration.id || "").toLowerCase().trim();
+              const nameClean = (registration.name || "").toLowerCase().trim();
+
+              const record = recordsList.find((r) => {
+                const rReg = (r.registerNumber || "").toLowerCase().trim();
+                const rId = (r.regId || "").toLowerCase().trim();
+                const rName = (r.name || "").toLowerCase().trim();
+
+                return (
+                  (regNoClean && rReg && rReg === regNoClean) ||
+                  (idClean && rId && rId === idClean) ||
+                  (nameClean && rName && rName === nameClean)
+                );
+              });
+
               const isPresent = record !== undefined;
 
               return (
@@ -202,20 +215,34 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
                   <div>
                     <div className="font-bold text-gray-200">{s.sessionName}</div>
                     <div className="text-[10px] text-gray-500">
-                      {statusStr === "closed" ? "🔒 Session Closed" : "🟢 Session Open"}
+                      {isClosed ? "🔒 Session Closed" : "🟢 Live Scanning Open"}
                     </div>
                   </div>
 
                   <div>
                     {isPresent ? (
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-orbitron font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center space-x-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>PRESENT</span>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-orbitron font-bold bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 flex items-center space-x-1 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>
+                          PRESENT (
+                          {record?.scannedAt
+                            ? new Date(record.scannedAt).toLocaleTimeString("en-IN", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Scanned"}
+                          )
+                        </span>
+                      </span>
+                    ) : isClosed ? (
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400 flex items-center space-x-1 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                        <Lock className="w-3 h-3" />
+                        <span>ABSENT</span>
                       </span>
                     ) : (
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-orbitron font-bold bg-red-500/10 border border-red-500/30 text-red-400 flex items-center space-x-1">
-                        {statusStr === "closed" ? <Lock className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                        <span>{statusStr === "closed" ? "ABSENT (CLOSED)" : "ABSENT"}</span>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-orbitron font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center space-x-1 animate-pulse">
+                        <Clock className="w-3 h-3" />
+                        <span>OPEN / PENDING SCAN</span>
                       </span>
                     )}
                   </div>
