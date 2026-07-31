@@ -99,20 +99,33 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
         </div>
       )}
 
-      {/* Warning Notice if Rejected */}
-      {isRejected && (
-        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/40 text-red-300 text-xs space-y-1">
-          <p className="font-bold flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 text-red-400" />
-            <span>Payment Screenshot Rejected by Admin</span>
-          </p>
-          {registration.rejectionReason && (
-            <p className="text-gray-300 font-mono text-[11px]">
-              Reason: {registration.rejectionReason}
-            </p>
-          )}
+      {/* HIGHLIGHTED WHATSAPP GROUP CALLOUT FOR REGISTERED STUDENTS */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-slate-950 border border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.25)] relative overflow-hidden group">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center space-x-3.5">
+            <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)] flex-shrink-0">
+              <WhatsAppIcon className="w-6 h-6 fill-current text-emerald-400 animate-pulse" />
+            </div>
+            <div>
+              <h4 className="font-orbitron font-extrabold text-sm sm:text-base text-emerald-300">
+                Official Event WhatsApp Group
+              </h4>
+              <p className="text-xs text-emerald-200/80 font-mono mt-0.5">
+                Join now for live workshop updates, resource links & announcements!
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 text-black shadow-[0_0_20px_rgba(16,185,129,0.7)] hover:shadow-[0_0_35px_rgba(16,185,129,1)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer flex-shrink-0"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current text-black" />
+            <span>JOIN GROUP NOW</span>
+          </a>
         </div>
-      )}
+      </div>
 
       {/* DIGITAL ATTENDANCE QR CODE TICKET */}
       {!isRejected && (
@@ -305,16 +318,6 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 border-t border-slate-800">
-        <a
-          href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full sm:w-auto px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-green-600 to-emerald-700 text-white shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:shadow-[0_0_35px_rgba(16,185,129,0.9)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
-        >
-          <WhatsAppIcon className="w-4 h-4 fill-current text-white" />
-          <span>JOIN WHATSAPP GROUP</span>
-        </a>
-
         <button
           onClick={onHomeClick}
           className="w-full sm:w-auto px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"

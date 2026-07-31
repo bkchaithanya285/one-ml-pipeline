@@ -129,20 +129,38 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a
-          href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-green-600 to-emerald-700 text-white shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:shadow-[0_0_35px_rgba(16,185,129,0.9)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
-        >
-          <WhatsAppIcon className="w-5 h-5 fill-current text-white" />
-          <span>JOIN WHATSAPP GROUP</span>
-        </a>
+      {/* HIGHLIGHTED WHATSAPP GROUP CALLOUT FOR REGISTERED STUDENTS */}
+      <div className="my-6 p-5 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-slate-950 border border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.3)] text-left relative overflow-hidden group">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center space-x-3.5">
+            <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)] flex-shrink-0">
+              <WhatsAppIcon className="w-7 h-7 fill-current text-emerald-400 animate-pulse" />
+            </div>
+            <div>
+              <h4 className="font-orbitron font-extrabold text-sm sm:text-base text-emerald-300">
+                Official Event WhatsApp Group
+              </h4>
+              <p className="text-xs text-emerald-200/80 font-mono mt-0.5">
+                Join now for live workshop updates, resources & announcements!
+              </p>
+            </div>
+          </div>
+          <a
+            href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 text-black shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:shadow-[0_0_40px_rgba(16,185,129,1)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer flex-shrink-0"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current text-black" />
+            <span>JOIN GROUP NOW</span>
+          </a>
+        </div>
+      </div>
 
+      <div className="mt-8 flex items-center justify-center">
         <button
           onClick={onHomeClick}
-          className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+          className="px-8 py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center space-x-2 cursor-pointer"
         >
           <Home className="w-4 h-4" />
           <span>Back to Home</span>
