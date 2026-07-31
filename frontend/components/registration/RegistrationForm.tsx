@@ -9,6 +9,7 @@ import { User, UserCheck, AlertTriangle, Phone, Building2, Calendar, Lock } from
 import { DepartmentOption, YearOption, ResidencyOption, Registration } from "@/types";
 import { checkRegisterNumberExists, getRegistrationByEmailOrUid } from "@/lib/firebase/firestore";
 import { signInWithGoogleDomain } from "@/lib/firebase/auth";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 const formSchema = z.object({
   fullName: z
@@ -228,6 +229,16 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               </svg>
               <span>{isAuthenticating ? "AUTHENTICATING..." : "SIGN IN WITH GOOGLE"}</span>
             </button>
+
+            <a
+              href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 w-full py-3 px-4 rounded-xl font-orbitron font-bold text-xs uppercase bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center space-x-2 cursor-pointer group"
+            >
+              <WhatsAppIcon className="w-5 h-5 fill-current text-emerald-400 group-hover:text-white" />
+              <span>JOIN WHATSAPP GROUP</span>
+            </a>
           </div>
         </div>
       ) : (

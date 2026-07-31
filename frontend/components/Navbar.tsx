@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cpu, Menu, X, LogOut } from "lucide-react";
 import { signOutStudent, subscribeAuthState } from "@/lib/firebase/auth";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface NavbarProps {
   onRegisterClick: () => void;
@@ -76,8 +77,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onRegisterClick, isLoggedIn: pro
           </span>
         </div>
 
-        {/* RIGHT: Glowing Register & Conditional Logout Buttons */}
+        {/* RIGHT: Glowing Register, WhatsApp & Conditional Logout Buttons */}
         <div className="hidden sm:flex items-center space-x-3">
+          <a
+            href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center space-x-2 cursor-pointer group"
+            title="Join Official WhatsApp Group"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current group-hover:scale-110 transition-transform text-emerald-400 group-hover:text-white" />
+            <span className="hidden lg:inline">WHATSAPP</span>
+          </a>
+
           <button
             onClick={onRegisterClick}
             className="relative group px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider overflow-hidden bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white shadow-[0_0_20px_rgba(0,243,255,0.5)] hover:shadow-[0_0_35px_rgba(0,243,255,0.8)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
@@ -102,6 +114,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onRegisterClick, isLoggedIn: pro
 
         {/* Mobile Menu Button */}
         <div className="flex sm:hidden items-center space-x-2">
+          <a
+            href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center"
+            title="Join WhatsApp Group"
+          >
+            <WhatsAppIcon className="w-4 h-4 fill-current" />
+          </a>
+
           <button
             onClick={onRegisterClick}
             className="px-3 py-1.5 text-xs font-orbitron font-bold rounded-lg bg-cyan-500 text-black shadow-[0_0_15px_#00f3ff]"
@@ -147,6 +169,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onRegisterClick, isLoggedIn: pro
             </div>
 
             <div className="space-y-2">
+              <a
+                href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase bg-emerald-500 text-black text-center flex items-center justify-center space-x-2 shadow-[0_0_20px_#10b981]"
+              >
+                <WhatsAppIcon className="w-4 h-4 fill-current text-black" />
+                <span>JOIN WHATSAPP GROUP</span>
+              </a>
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

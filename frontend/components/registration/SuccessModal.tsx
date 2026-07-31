@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { CheckCircle2, Home, QrCode, Hash, Calendar, MapPin } from "lucide-react";
 import { RegistrationFormData } from "./RegistrationForm";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface SuccessModalProps {
   registrationId: string;
@@ -128,10 +129,20 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         </div>
       </div>
 
-      <div className="mt-8 flex items-center justify-center space-x-4">
+      <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a
+          href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-green-600 to-emerald-700 text-white shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:shadow-[0_0_35px_rgba(16,185,129,0.9)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+        >
+          <WhatsAppIcon className="w-5 h-5 fill-current text-white" />
+          <span>JOIN WHATSAPP GROUP</span>
+        </a>
+
         <button
           onClick={onHomeClick}
-          className="px-8 py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center space-x-2 cursor-pointer"
+          className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
         >
           <Home className="w-4 h-4" />
           <span>Back to Home</span>

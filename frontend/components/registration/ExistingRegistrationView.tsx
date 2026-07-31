@@ -7,6 +7,7 @@ import { CheckCircle2, AlertCircle, Clock, Home, FileText, QrCode, CalendarCheck
 import { Registration, AttendanceSession } from "@/types";
 import { subscribeAttendanceSessions } from "@/lib/firebase/firestore";
 import { signOutStudent } from "@/lib/firebase/auth";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 interface ExistingRegistrationViewProps {
   registration: Registration;
@@ -304,6 +305,16 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 border-t border-slate-800">
+        <a
+          href="https://chat.whatsapp.com/EGUP6xrcI83C4ux94fRJls"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-green-600 to-emerald-700 text-white shadow-[0_0_25px_rgba(16,185,129,0.6)] hover:shadow-[0_0_35px_rgba(16,185,129,0.9)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+        >
+          <WhatsAppIcon className="w-4 h-4 fill-current text-white" />
+          <span>JOIN WHATSAPP GROUP</span>
+        </a>
+
         <button
           onClick={onHomeClick}
           className="w-full sm:w-auto px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_25px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center justify-center space-x-2 cursor-pointer"
@@ -317,7 +328,7 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
           className="w-full sm:w-auto px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-all flex items-center justify-center space-x-2 cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
-          <span>LOG OUT / SWITCH ACCOUNT</span>
+          <span>LOG OUT</span>
         </button>
       </div>
     </motion.div>

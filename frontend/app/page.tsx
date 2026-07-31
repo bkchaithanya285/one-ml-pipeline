@@ -141,8 +141,6 @@ export default function Home() {
       return;
     }
 
-    if (isRegistrationClosed) return;
-
     if (googleAuthUser) {
       const record = await getRegistrationByEmailOrUid(googleAuthUser.email, googleAuthUser.uid);
       if (record) {
@@ -151,6 +149,10 @@ export default function Home() {
           localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
         }
         setCurrentStep("existingRecord");
+        return;
+      }
+      if (isRegistrationClosed) {
+        alert(`Registrations are closed. No existing registration found for account ${googleAuthUser.email}.`);
         return;
       }
       setCurrentStep("instructions");
@@ -178,6 +180,11 @@ export default function Home() {
           localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
         }
         setCurrentStep("existingRecord");
+        return;
+      }
+
+      if (isRegistrationClosed) {
+        alert(`Registrations are closed. No existing registration was found for Google account (${user.email}).`);
         return;
       }
 
@@ -317,26 +324,19 @@ export default function Home() {
 
                 <div className="pt-2">
                   <button
-                    disabled={isRegistrationClosed && !existingRecord}
                     onClick={handleStartRegistrationFlow}
-                    className={`relative group inline-flex items-center space-x-3 px-10 py-5 rounded-2xl font-orbitron font-extrabold text-sm sm:text-base tracking-widest uppercase transition-all duration-300 ${
-                      isRegistrationClosed && !existingRecord
-                        ? "bg-slate-800 text-gray-500 cursor-not-allowed opacity-70"
-                        : "bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white shadow-[0_0_40px_rgba(0,243,255,0.7)] hover:shadow-[0_0_60px_rgba(0,243,255,1)] hover:scale-105 active:scale-95 cursor-pointer"
-                    }`}
+                    className="relative group inline-flex items-center space-x-3 px-10 py-5 rounded-2xl font-orbitron font-extrabold text-sm sm:text-base tracking-widest uppercase transition-all duration-300 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white shadow-[0_0_40px_rgba(0,243,255,0.7)] hover:shadow-[0_0_60px_rgba(0,243,255,1)] hover:scale-105 active:scale-95 cursor-pointer"
                   >
                     <span className="absolute inset-0 rounded-2xl bg-cyan-400 opacity-25 group-hover:opacity-40 animate-pulse" />
                     <span className="relative z-10 flex items-center space-x-3">
                       <span>
                         {existingRecord
-                          ? "VIEW MY REGISTRATION"
+                          ? "VIEW MY REGISTRATION / TICKET"
                           : isRegistrationClosed
-                          ? "REGISTRATIONS CLOSED"
+                          ? "LOGIN TO VIEW TICKET"
                           : "REGISTER NOW"}
                       </span>
-                      {(!isRegistrationClosed || existingRecord) && (
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      )}
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </button>
                 </div>
