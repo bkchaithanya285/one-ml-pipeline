@@ -60,14 +60,14 @@ export async function signOutStudent(): Promise<void> {
 }
 
 /**
- * Admin Sign In with Email and Password (Admin Password: Tony@2006)
+ * Admin Sign In with Email and Password
  */
 export async function signInAdmin(
   email: string,
   pass: string
 ): Promise<{ success: boolean; error: string | null }> {
   try {
-    if (pass === "Tony@2006") {
+    if (pass === "CSI@939") {
       if (typeof window !== "undefined") {
         localStorage.setItem("csi_kare_admin_session", "active");
       }
@@ -77,7 +77,7 @@ export async function signInAdmin(
     await signInWithEmailAndPassword(auth, email, pass);
     return { success: true, error: null };
   } catch (err: any) {
-    if (pass === "Tony@2006") {
+    if (pass === "CSI@939") {
       if (typeof window !== "undefined") {
         localStorage.setItem("csi_kare_admin_session", "active");
       }

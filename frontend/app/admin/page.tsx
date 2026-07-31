@@ -9,8 +9,8 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [email, setEmail] = useState("admin@klu.ac.in");
-  const [password, setPassword] = useState("Tony@2006");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -131,9 +131,7 @@ export default function AdminPage() {
             </button>
           </form>
 
-          <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-[10px] text-gray-500 font-mono text-center">
-            Default Admin Password: Tony@2006
-          </div>
+
         </motion.div>
       </div>
     </div>

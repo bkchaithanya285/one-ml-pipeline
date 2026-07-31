@@ -76,4 +76,4 @@ For Google Sign-In to work on your live Vercel domain:
 - [x] **Google Account Chooser**: `prompt: 'select_account'` forces account chooser on login.
 - [x] **Live Attendance Scanner**: Web audio chime + continuous camera feed + session lock working.
 - [x] **Excel Export**: Attendance report export verified.
-- [x] **Admin Password**: Configured as `Tony@2006` with URL `/admin`.
+- [x] **Admin Password**: Configured as `CSI@939` with URL `/admin`.
