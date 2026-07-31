@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { RobotAvatar } from "@/components/RobotAvatar";
 import { RegistrationMonitor } from "@/components/RegistrationMonitor";
@@ -435,6 +436,8 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
+
+      <Footer />
     </main>
   );
 }

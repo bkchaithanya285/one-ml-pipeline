@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ShieldCheck, Lock, Mail, ArrowLeft } from "lucide-react";
 import { signInAdmin, isLocalAdminSession, signOutAdmin } from "@/lib/firebase/auth";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { Footer } from "@/components/Footer";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -133,6 +134,10 @@ export default function AdminPage() {
 
 
         </motion.div>
+      </div>
+
+      <div className="absolute bottom-0 left-0 w-full">
+        <Footer />
       </div>
     </div>
   );
