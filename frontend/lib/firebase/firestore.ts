@@ -54,22 +54,7 @@ const INITIAL_MOCK_REGISTRATIONS: Registration[] = Array.from({ length: 103 }).m
 );
 
 // Initial Attendance Sessions
-const INITIAL_MOCK_SESSIONS: AttendanceSession[] = [
-  {
-    id: "session-1",
-    sessionName: "Morning Keynote & ML Fundamentals",
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-    status: "open",
-    records: [
-      {
-        regId: "reg-1000",
-        registerNumber: "99230041000",
-        name: "STUDENT DEMO 1",
-        scannedAt: new Date(Date.now() - 3600000).toISOString(),
-      },
-    ],
-  },
-];
+const INITIAL_MOCK_SESSIONS: AttendanceSession[] = [];
 
 const LOCAL_STORAGE_KEY_REGS = "csi_kare_registrations_v2";
 const LOCAL_STORAGE_KEY_SETTINGS = "csi_kare_settings_v2";
@@ -134,7 +119,14 @@ function getLocalSessions(): AttendanceSession[] {
     if (!data) {
       return [];
     }
-    return JSON.parse(data);
+    const parsed: AttendanceSession[] = JSON.parse(data);
+    const cleaned = parsed.filter(
+      (s) => s.id !== "session-1" && s.sessionName !== "Morning Keynote & ML Fundamentals"
+    );
+    if (cleaned.length !== parsed.length) {
+      saveLocalSessions(cleaned);
+    }
+    return cleaned;
   } catch (e) {
     return [];
   }
