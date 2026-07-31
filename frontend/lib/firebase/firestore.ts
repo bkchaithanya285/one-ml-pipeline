@@ -128,19 +128,15 @@ function saveLocalSettings(settings: EventSettings) {
 }
 
 function getLocalSessions(): AttendanceSession[] {
-  if (typeof window === "undefined") return INITIAL_MOCK_SESSIONS;
+  if (typeof window === "undefined") return [];
   try {
     const data = localStorage.getItem(LOCAL_STORAGE_KEY_SESSIONS);
     if (!data) {
-      localStorage.setItem(
-        LOCAL_STORAGE_KEY_SESSIONS,
-        JSON.stringify(INITIAL_MOCK_SESSIONS)
-      );
-      return INITIAL_MOCK_SESSIONS;
+      return [];
     }
     return JSON.parse(data);
   } catch (e) {
-    return INITIAL_MOCK_SESSIONS;
+    return [];
   }
 }
 
@@ -689,5 +685,15 @@ export async function deleteAttendanceSession(sessionId: string): Promise<void> 
   try {
     const docRef = doc(db, "attendance_sessions", sessionId);
     await deleteDoc(docRef);
+  } catch (e) {}
+}
+
+export async function deleteAllAttendanceSessions(): Promise<void> {
+  saveLocalSessions([]);
+  try {
+    const colRef = collection(db, "attendance_sessions");
+    const snapshot = await getDocs(colRef);
+    const deletePromises = snapshot.docs.map((docSnap) => deleteDoc(docSnap.ref));
+    await Promise.all(deletePromises);
   } catch (e) {}
 }

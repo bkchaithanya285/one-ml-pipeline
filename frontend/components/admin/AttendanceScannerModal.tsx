@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import jsQR from "jsqr";
 import {
@@ -20,6 +20,7 @@ import {
   UserCheck,
   UserX,
   Download,
+  AlertOctagon,
 } from "lucide-react";
 import { Registration, AttendanceSession } from "@/types";
 import {
@@ -27,6 +28,7 @@ import {
   createAttendanceSession,
   markAttendanceInSession,
   deleteAttendanceSession,
+  deleteAllAttendanceSessions,
   toggleAttendanceSessionStatus,
 } from "@/lib/firebase/firestore";
 import { exportAttendanceToExcel } from "@/lib/exportUtils";
@@ -115,7 +117,9 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     } catch (e) {}
   };
 
-  // Continuous Camera QR Code Frame Processing Loop
+  const lastScanTimeRef = useRef<number>(0);
+
+  // Continuous Camera QR Code Frame Processing Loop with Throttling (~8 fps for zero lag)
   useEffect(() => {
     let stream: MediaStream | null = null;
 
@@ -142,32 +146,35 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     const scanCanvasFrame = () => {
       if (!isOpen || isSessionClosed || !isCameraActive) return;
 
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
+      const now = Date.now();
+      if (now - lastScanTimeRef.current > 120) {
+        lastScanTimeRef.current = now;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
 
-      if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-          }
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            }
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "attemptBoth",
-          });
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "attemptBoth",
+            });
 
-          if (code && code.data) {
-            const now = Date.now();
-            if (
-              !lastScannedCode.current ||
-              lastScannedCode.current.code !== code.data ||
-              now - lastScannedCode.current.time > 2000
-            ) {
-              lastScannedCode.current = { code: code.data, time: now };
-              handleProcessScan(code.data);
+            if (code && code.data) {
+              if (
+                !lastScannedCode.current ||
+                lastScannedCode.current.code !== code.data ||
+                now - lastScannedCode.current.time > 2000
+              ) {
+                lastScannedCode.current = { code: code.data, time: now };
+                handleProcessScan(code.data);
+              }
             }
           }
         }
@@ -299,6 +306,18 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
       return;
     }
 
+    // STRICT PAYMENT VERIFICATION CHECK: Only Approved Payment Students Can Be Marked Present!
+    if (student.paymentStatus !== "Approved") {
+      setFeedback({
+        type: "error",
+        title: "UNVERIFIED PAYMENT - ATTENDANCE DENIED 🚫",
+        message: `Student ${student.name} (${student.registerNumber}) has payment status '${student.paymentStatus || "Pending"}'. Payment proof must be verified & Approved by Admin before attendance can be taken.`,
+      });
+      playAudioBeep("error");
+      setScanInput("");
+      return;
+    }
+
     const res = await markAttendanceInSession(currentSession.id, {
       regId: student.id,
       registerNumber: student.registerNumber,
@@ -353,6 +372,22 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     }
   };
 
+  const handleDeleteAllSessions = async () => {
+    if (
+      typeof window !== "undefined" &&
+      window.confirm("Are you sure you want to DELETE ALL attendance sessions? This action cannot be undone.")
+    ) {
+      await deleteAllAttendanceSessions();
+      setSessions([]);
+      setSelectedSessionId("");
+      setFeedback({
+        type: "warning",
+        title: "ALL SESSIONS DELETED",
+        message: "All attendance sessions have been permanently cleared.",
+      });
+    }
+  };
+
   const handleExportAttendanceExcel = () => {
     if (!currentSession) return;
     exportAttendanceToExcel(
@@ -362,32 +397,50 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
     );
   };
 
-  // Analytics Calculations
-  const totalRegistered = registrations.length;
-  const sessionRecords = currentSession?.records || [];
-  const presentCount = sessionRecords.length;
-  const absentCount = Math.max(0, totalRegistered - presentCount);
-  const presentPercentage =
-    totalRegistered > 0 ? Math.round((presentCount / totalRegistered) * 100) : 0;
+  // Analytics & Roster Calculations (Memoized for 0 lag)
+  const {
+    presentKeysSet,
+    presentCount,
+    absentCount,
+    presentPercentage,
+    filteredRoster,
+    totalRegistered,
+    sessionRecords,
+  } = useMemo(() => {
+    const total = registrations.length;
+    const records = currentSession?.records || [];
+    const presentCnt = records.length;
+    const absentCnt = Math.max(0, total - presentCnt);
+    const pct = total > 0 ? Math.round((presentCnt / total) * 100) : 0;
 
-  // Build 100% Comprehensive Present Lookup Set (matches on Reg No, Reg ID, or Name)
-  const presentKeysSet = new Set<string>();
-  sessionRecords.forEach((rec) => {
-    if (rec.registerNumber) presentKeysSet.add(rec.registerNumber.toLowerCase().trim());
-    if (rec.regId) presentKeysSet.add(rec.regId.toLowerCase().trim());
-    if (rec.name) presentKeysSet.add(rec.name.toLowerCase().trim());
-  });
+    const keysSet = new Set<string>();
+    records.forEach((rec) => {
+      if (rec.registerNumber) keysSet.add(rec.registerNumber.toLowerCase().trim());
+      if (rec.regId) keysSet.add(rec.regId.toLowerCase().trim());
+      if (rec.name) keysSet.add(rec.name.toLowerCase().trim());
+    });
 
-  const filteredRoster = registrations.filter((reg) => {
-    const isPresent =
-      (reg.registerNumber && presentKeysSet.has(reg.registerNumber.toLowerCase().trim())) ||
-      (reg.id && presentKeysSet.has(reg.id.toLowerCase().trim())) ||
-      (reg.name && presentKeysSet.has(reg.name.toLowerCase().trim()));
+    const roster = registrations.filter((reg) => {
+      const isPresent =
+        (reg.registerNumber && keysSet.has(reg.registerNumber.toLowerCase().trim())) ||
+        (reg.id && keysSet.has(reg.id.toLowerCase().trim())) ||
+        (reg.name && keysSet.has(reg.name.toLowerCase().trim()));
 
-    if (rosterFilter === "present") return isPresent;
-    if (rosterFilter === "absent") return !isPresent;
-    return true;
-  });
+      if (rosterFilter === "present") return isPresent;
+      if (rosterFilter === "absent") return !isPresent;
+      return true;
+    });
+
+    return {
+      presentKeysSet: keysSet,
+      presentCount: presentCnt,
+      absentCount: absentCnt,
+      presentPercentage: pct,
+      filteredRoster: roster,
+      totalRegistered: total,
+      sessionRecords: records,
+    };
+  }, [registrations, currentSession, rosterFilter]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-xl">
@@ -542,10 +595,22 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteSession(currentSession.id)}
-                    className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/40 transition-colors"
-                    title="Delete Session"
+                    className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/40 transition-colors cursor-pointer"
+                    title="Delete Active Session"
                   >
                     <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+
+                {sessions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteAllSessions}
+                    className="px-3 py-2.5 rounded-xl bg-red-600/30 hover:bg-red-600 border border-red-500/50 text-red-300 hover:text-white font-orbitron font-bold text-xs flex items-center space-x-1.5 transition-colors cursor-pointer"
+                    title="Delete All Attendance Sessions"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                    <span className="hidden sm:inline">DELETE ALL SESSIONS</span>
                   </button>
                 )}
               </div>
@@ -811,20 +876,23 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
                       </tr>
                     ) : (
                       filteredRoster.map((student, i) => {
-                        const isPresent =
-                          presentKeysSet.has(student.registerNumber.toLowerCase().trim()) ||
-                          presentKeysSet.has(student.id.toLowerCase().trim());
+                        const sReg = (student.registerNumber || "").toLowerCase().trim();
+                        const sId = (student.id || "").toLowerCase().trim();
+                        const sName = (student.name || "").toLowerCase().trim();
 
-                        const scanRecord = sessionRecords.find(
-                          (r) =>
-                            (r.registerNumber &&
-                              r.registerNumber.toLowerCase().trim() ===
-                                student.registerNumber.toLowerCase().trim()) ||
-                            (r.regId && r.regId.toLowerCase().trim() === student.id.toLowerCase().trim())
-                        );
+                        const isPresent =
+                          (sReg && presentKeysSet.has(sReg)) ||
+                          (sId && presentKeysSet.has(sId)) ||
+                          (sName && presentKeysSet.has(sName));
+
+                        const scanRecord = sessionRecords.find((r) => {
+                          const rReg = (r.registerNumber || "").toLowerCase().trim();
+                          const rId = (r.regId || "").toLowerCase().trim();
+                          return (rReg && sReg && rReg === sReg) || (rId && sId && rId === sId);
+                        });
 
                         return (
-                          <tr key={student.id} className="hover:bg-cyan-500/5">
+                          <tr key={student.id || `student-${i}`} className="hover:bg-cyan-500/5">
                             <td className="py-2.5 px-4 text-gray-400">{i + 1}</td>
                             <td className="py-2.5 px-4 font-bold text-gray-100">{student.name}</td>
                             <td className="py-2.5 px-4 text-cyan-300 font-bold">{student.registerNumber}</td>
@@ -836,15 +904,23 @@ export const AttendanceScannerModal: React.FC<AttendanceScannerModalProps> = ({
                                 <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-orbitron font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-400">
                                   <CheckCircle2 className="w-3 h-3" />
                                   <span>
-                                    PRESENT (
-                                    {scanRecord && scanRecord.scannedAt
-                                      ? new Date(scanRecord.scannedAt).toLocaleTimeString("en-IN", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
-                                      : "Scanned"}
-                                    )
+                                    {`PRESENT (${
+                                      scanRecord?.scannedAt
+                                        ? new Date(scanRecord.scannedAt).toLocaleTimeString("en-IN", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })
+                                        : "Scanned"
+                                    })`}
                                   </span>
+                                </span>
+                              ) : student.paymentStatus !== "Approved" ? (
+                                <span
+                                  className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-orbitron font-bold bg-amber-500/20 border border-amber-500/40 text-amber-400"
+                                  title="Payment pending verification - cannot be marked present"
+                                >
+                                  <AlertOctagon className="w-3 h-3" />
+                                  <span>UNVERIFIED PAYMENT ({student.paymentStatus || "Pending"})</span>
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-orbitron font-bold bg-red-500/10 border border-red-500/30 text-red-400">
