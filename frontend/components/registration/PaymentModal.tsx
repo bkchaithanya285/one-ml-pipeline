@@ -12,6 +12,9 @@ import {
   ArrowLeft,
   Lock,
   Hash,
+  ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
 import { RegistrationFormData } from "./RegistrationForm";
 import { uploadPaymentScreenshot } from "@/lib/cloudinary";
@@ -20,6 +23,8 @@ import { createRegistration } from "@/lib/firebase/firestore";
 interface PaymentModalProps {
   formData: RegistrationFormData;
   qrCodeUrl: string;
+  fee?: number;
+  upiId?: string;
   onBack: () => void;
   onSuccess: (registrationId: string) => void;
 }
@@ -27,9 +32,12 @@ interface PaymentModalProps {
 export const PaymentModal: React.FC<PaymentModalProps> = ({
   formData,
   qrCodeUrl,
+  fee = 100,
+  upiId = "csikare@upi",
   onBack,
   onSuccess,
 }) => {
+  const [copiedUpi, setCopiedUpi] = useState(false);
   const [transactionId, setTransactionId] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -153,7 +161,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* Left Column: QR Code Card */}
         <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-900/90 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,243,255,0.1)] group hover:border-cyan-400 transition-colors text-center">
           <span className="text-[10px] font-orbitron font-bold text-cyan-400 tracking-widest uppercase mb-3">
-            SCAN QR TO PAY ₹100
+            SCAN QR TO PAY ₹{fee}
           </span>
 
           <div className="relative w-48 h-48 p-3 rounded-xl bg-white shadow-[0_0_25px_rgba(0,243,255,0.4)] group-hover:scale-105 transition-transform duration-300">
@@ -166,14 +174,50 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             />
           </div>
 
-          <div className="mt-4 space-y-1">
-            <span className="text-xs font-bold text-gray-200 block">
-              CSI KARE STUDENT CHAPTER
-            </span>
-            <span className="text-[10px] text-cyan-400 font-mono block">
-              Group: CLAIM GROUP 3
-            </span>
-          </div>
+          {/* Interactive Pay via UPI App & Copy UPI ID Buttons */}
+          {(() => {
+            const activeUpiId = qrCodeUrl.match(/pa=([^&]+)/)?.[1]
+              ? decodeURIComponent(qrCodeUrl.match(/pa=([^&]+)/)![1])
+              : (upiId || "csikare@upi");
+            const upiDeepLink = `upi://pay?pa=${encodeURIComponent(activeUpiId)}&pn=${encodeURIComponent("CSI KARE STUDENT CHAPTER")}&am=${fee}&cu=INR&tn=${encodeURIComponent("CSI KARE ML Workshop")}`;
+
+            const handleCopyUpi = () => {
+              if (typeof navigator !== "undefined" && navigator.clipboard) {
+                navigator.clipboard.writeText(activeUpiId);
+                setCopiedUpi(true);
+                setTimeout(() => setCopiedUpi(false), 2000);
+              }
+            };
+
+            return (
+              <div className="w-full mt-4 space-y-2.5">
+                <a
+                  href={upiDeepLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 rounded-xl font-orbitron font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:shadow-[0_0_35px_rgba(16,185,129,0.9)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4 text-black flex-shrink-0" />
+                  <span>PAY USING UPI APP (GPay / PhonePe / Paytm)</span>
+                </a>
+
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+                  <div className="flex items-center space-x-1.5 text-gray-300 truncate">
+                    <span className="text-[10px] text-gray-500 uppercase font-orbitron">UPI ID:</span>
+                    <span className="font-bold text-amber-300 truncate">{activeUpiId}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyUpi}
+                    className="px-3 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-black font-orbitron text-[10px] font-bold border border-cyan-500/40 transition-colors flex items-center space-x-1 flex-shrink-0 cursor-pointer"
+                  >
+                    {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedUpi ? "COPIED!" : "COPY ID"}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Right Column: Transaction ID & Screenshot Upload Area */}

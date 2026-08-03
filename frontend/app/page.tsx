@@ -418,6 +418,8 @@ export default function Home() {
               <PaymentModal
                 formData={formData}
                 qrCodeUrl={eventSettings.qrCodeUrl}
+                fee={eventSettings.fee}
+                upiId={eventSettings.upiId || "csikare@upi"}
                 onBack={() => setCurrentStep("verify")}
                 onSuccess={(regId) => {
                   setCreatedRegId(regId);

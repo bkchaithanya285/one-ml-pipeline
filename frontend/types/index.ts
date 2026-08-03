@@ -53,6 +53,7 @@ export interface EventSettings {
   registrationEnabled: boolean;
   qrCodeUrl: string;
   posterUrl?: string;
+  upiId?: string;
 }
 
 export interface AdminUser {

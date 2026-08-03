@@ -118,6 +118,19 @@ export const EventSettingsModal: React.FC<EventSettingsModalProps> = ({
               />
             </div>
 
+            <div className="space-y-1">
+              <label className="text-gray-400 font-orbitron">Official UPI VPA ID</label>
+              <input
+                type="text"
+                placeholder="csikare@upi or 9876543210@ybl"
+                value={formState.upiId || ""}
+                onChange={(e) =>
+                  setFormState({ ...formState, upiId: e.target.value })
+                }
+                className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-amber-300 font-bold font-mono"
+              />
+            </div>
+
             <div className="space-y-1 sm:col-span-2">
               <label className="text-gray-400 font-orbitron">Maximum Spots</label>
               <input

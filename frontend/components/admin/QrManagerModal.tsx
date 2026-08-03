@@ -8,18 +8,21 @@ import { uploadPaymentScreenshot } from "@/lib/cloudinary";
 
 interface QrManagerModalProps {
   currentQrUrl: string;
+  currentUpiId?: string;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateQr: (newUrl: string) => void;
+  onUpdateQr: (newUrl: string, newUpiId?: string) => void;
 }
 
 export const QrManagerModal: React.FC<QrManagerModalProps> = ({
   currentQrUrl,
+  currentUpiId = "csikare@upi",
   isOpen,
   onClose,
   onUpdateQr,
 }) => {
   const [newQrInput, setNewQrInput] = useState("");
+  const [upiIdInput, setUpiIdInput] = useState(currentUpiId);
   const [uploadedPreview, setUploadedPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -56,7 +59,7 @@ export const QrManagerModal: React.FC<QrManagerModalProps> = ({
   const handleSave = () => {
     const targetUrl = newQrInput.trim() || uploadedPreview || currentQrUrl;
     if (targetUrl) {
-      onUpdateQr(targetUrl);
+      onUpdateQr(targetUrl, upiIdInput.trim());
       onClose();
     }
   };
@@ -64,7 +67,7 @@ export const QrManagerModal: React.FC<QrManagerModalProps> = ({
   const handleDeleteQr = () => {
     const defaultPlaceholder =
       "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=csikare@upi&pn=CSI%20KARE&am=100&cu=INR";
-    onUpdateQr(defaultPlaceholder);
+    onUpdateQr(defaultPlaceholder, "csikare@upi");
     onClose();
   };
 
@@ -134,7 +137,18 @@ export const QrManagerModal: React.FC<QrManagerModalProps> = ({
               placeholder="https://..."
               value={newQrInput}
               onChange={(e) => setNewQrInput(e.target.value)}
-              className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-gray-200 font-mono"
+              className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-gray-200 font-mono mb-3"
+            />
+
+            <div className="text-[10px] text-cyan-400 font-orbitron uppercase text-left font-bold">
+              ADMIN UPI VPA ID (FOR APP DEEP LINK)
+            </div>
+            <input
+              type="text"
+              placeholder="csikare@upi"
+              value={upiIdInput}
+              onChange={(e) => setUpiIdInput(e.target.value)}
+              className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-amber-300 font-mono font-bold"
             />
           </div>
         </div>

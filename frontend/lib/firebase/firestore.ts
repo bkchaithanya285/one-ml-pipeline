@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: EventSettings = {
   registrationEnabled: true,
   qrCodeUrl:
     "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=csikare@upi&pn=CSI%20KARE%20STUDENT%20CHAPTER&am=100&cu=INR",
+  upiId: "csikare@upi",
 };
 
 // Initial Mock Registrations (103 existing registrations)

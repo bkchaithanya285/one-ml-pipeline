@@ -262,9 +262,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onSignOut }) => 
 
       <QrManagerModal
         currentQrUrl={settings.qrCodeUrl}
+        currentUpiId={settings.upiId || "csikare@upi"}
         isOpen={isQrOpen}
         onClose={() => setIsQrOpen(false)}
-        onUpdateQr={(newUrl) => updateEventSettings({ qrCodeUrl: newUrl })}
+        onUpdateQr={(newUrl, newUpiId) =>
+          updateEventSettings({
+            qrCodeUrl: newUrl,
+            ...(newUpiId ? { upiId: newUpiId } : {}),
+          })
+        }
       />
     </div>
   );
