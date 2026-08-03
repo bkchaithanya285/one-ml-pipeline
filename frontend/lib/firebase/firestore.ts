@@ -166,13 +166,15 @@ export async function getEventSettings(): Promise<EventSettings> {
 export async function updateEventSettings(
   settings: Partial<EventSettings>
 ): Promise<void> {
+  const current = getLocalSettings();
+  const updated = { ...current, ...settings };
+  saveLocalSettings(updated);
+
   try {
     const docRef = doc(db, "settings", "event");
     await setDoc(docRef, settings, { merge: true });
   } catch (err) {
-    const current = getLocalSettings();
-    const updated = { ...current, ...settings };
-    saveLocalSettings(updated);
+    console.error("Firestore settings update error:", err);
   }
 }
 
@@ -182,13 +184,27 @@ export async function updateEventSettings(
 export function subscribeEventSettings(
   callback: (settings: EventSettings) => void
 ) {
+  const handleCustomUpdate = (e: any) => {
+    if (e.detail) {
+      callback(e.detail);
+    } else {
+      callback(getLocalSettings());
+    }
+  };
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("csi_kare_settings_updated", handleCustomUpdate);
+  }
+
   try {
     const docRef = doc(db, "settings", "event");
-    return onSnapshot(
+    const unsub = onSnapshot(
       docRef,
       (snap) => {
         if (snap.exists()) {
-          callback({ ...DEFAULT_SETTINGS, ...snap.data() } as EventSettings);
+          const merged = { ...DEFAULT_SETTINGS, ...snap.data() } as EventSettings;
+          saveLocalSettings(merged);
+          callback(merged);
         } else {
           callback(getLocalSettings());
         }
@@ -197,9 +213,20 @@ export function subscribeEventSettings(
         callback(getLocalSettings());
       }
     );
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("csi_kare_settings_updated", handleCustomUpdate);
+      }
+      unsub();
+    };
   } catch (e) {
     callback(getLocalSettings());
-    return () => {};
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("csi_kare_settings_updated", handleCustomUpdate);
+      }
+    };
   }
 }
 

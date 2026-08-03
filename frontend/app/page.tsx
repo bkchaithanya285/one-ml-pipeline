@@ -99,6 +99,13 @@ export default function Home() {
               displayName: cleanStudentName(userDisplayName || ""),
             });
           }
+          if (typeof window !== "undefined") {
+            const hasDraft = localStorage.getItem("csi_kare_registration_draft_v1");
+            const savedStep = localStorage.getItem("csi_kare_current_step");
+            if (hasDraft || savedStep === "form" || savedStep === "instructions") {
+              setCurrentStep("form");
+            }
+          }
         }
       }
     };

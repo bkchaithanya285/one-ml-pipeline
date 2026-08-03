@@ -161,6 +161,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               src={qrCodeUrl}
               alt="UPI Payment QR Code"
               fill
+              unoptimized
               className="object-contain p-2"
             />
           </div>

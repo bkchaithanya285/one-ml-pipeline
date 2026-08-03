@@ -58,6 +58,8 @@ interface RegistrationFormProps {
   onCancel: () => void;
 }
 
+const LOCAL_STORAGE_DRAFT_KEY = "csi_kare_registration_draft_v1";
+
 export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   initialGoogleUser,
   onContinue,
@@ -73,6 +75,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [regNumError, setRegNumError] = useState<string | null>(null);
   const [isCheckingRegNum, setIsCheckingRegNum] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isDraftRestored, setIsDraftRestored] = useState(false);
 
   const {
     register,
@@ -90,6 +93,52 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       setGoogleUser(initialGoogleUser);
     }
   }, [initialGoogleUser]);
+
+  // AUTO-RESTORE PARTIALLY FILLED FORM DETAILS FROM LOCAL STORAGE ON MOUNT
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const savedDraft = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY);
+      if (savedDraft) {
+        const parsed = JSON.parse(savedDraft);
+        let restoredCount = 0;
+        if (parsed.fullName) { setValue("fullName", parsed.fullName, { shouldValidate: true }); restoredCount++; }
+        if (parsed.registerNumber) { setValue("registerNumber", parsed.registerNumber, { shouldValidate: true }); restoredCount++; }
+        if (parsed.phone) { setValue("phone", parsed.phone, { shouldValidate: true }); restoredCount++; }
+        if (parsed.department) { setValue("department", parsed.department, { shouldValidate: true }); restoredCount++; }
+        if (parsed.year) { setValue("year", parsed.year, { shouldValidate: true }); restoredCount++; }
+        if (parsed.section) { setValue("section", parsed.section, { shouldValidate: true }); restoredCount++; }
+        if (parsed.residency) { setValue("residency", parsed.residency, { shouldValidate: true }); restoredCount++; }
+        if (restoredCount > 0) {
+          setIsDraftRestored(true);
+        }
+      } else if (googleUser && googleUser.displayName) {
+        setValue("fullName", googleUser.displayName.toUpperCase(), { shouldValidate: true });
+      }
+    } catch (e) {
+      console.error("Draft restore error", e);
+    }
+  }, [setValue, googleUser]);
+
+  // AUTO-SAVE FORM DETAILS ON CHANGE SO REFRESH DOES NOT LOSE DATA
+  const allValues = watch();
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const draftData = {
+        fullName: allValues.fullName || "",
+        registerNumber: allValues.registerNumber || "",
+        phone: allValues.phone || "",
+        department: allValues.department || "",
+        year: allValues.year || "",
+        section: allValues.section || "",
+        residency: allValues.residency || "",
+      };
+      if (Object.values(draftData).some((val) => val && val.trim().length > 0)) {
+        localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(draftData));
+      }
+    } catch (e) {}
+  }, [allValues]);
 
   const fullNameValue = watch("fullName") || "";
   const sectionValue = watch("section") || "";
@@ -152,6 +201,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         return;
       }
 
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
+      }
+
       onContinue({
         ...data,
         email: googleUser.email,
@@ -170,18 +223,25 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-2xl mx-auto rounded-3xl bg-slate-950/90 border border-cyan-500/30 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_0_50px_rgba(0,243,255,0.15)]"
     >
-      <div className="flex items-center space-x-3 pb-6 border-b border-slate-800">
-        <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-          <UserCheck className="w-7 h-7" />
+      <div className="flex items-center justify-between pb-6 border-b border-slate-800">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <UserCheck className="w-7 h-7" />
+          </div>
+          <div>
+            <h2 className="font-orbitron font-extrabold text-xl sm:text-2xl text-cyan-300">
+              Student Registration Portal
+            </h2>
+            <p className="text-xs text-gray-400 font-mono">
+              ONE COMPLETE MACHINE LEARNING PIPELINE
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-orbitron font-extrabold text-xl sm:text-2xl text-cyan-300">
-            Student Registration Portal
-          </h2>
-          <p className="text-xs text-gray-400 font-mono">
-            ONE COMPLETE MACHINE LEARNING PIPELINE
-          </p>
-        </div>
+        {isDraftRestored && (
+          <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[10px]">
+            💾 Draft Auto-Restored
+          </span>
+        )}
       </div>
 
       {/* Step 1: Google Authentication Guard */}

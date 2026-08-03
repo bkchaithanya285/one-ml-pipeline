@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { QrCode, Upload, Trash2, X, RefreshCw, CheckCircle2 } from "lucide-react";
+import { QrCode, Upload, Trash2, X, RefreshCw, CheckCircle2, Loader2 } from "lucide-react";
+import { uploadPaymentScreenshot } from "@/lib/cloudinary";
 
 interface QrManagerModalProps {
   currentQrUrl: string;
@@ -20,22 +21,40 @@ export const QrManagerModal: React.FC<QrManagerModalProps> = ({
 }) => {
   const [newQrInput, setNewQrInput] = useState("");
   const [uploadedPreview, setUploadedPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setIsUploading(true);
+      setUploadError(null);
+
+      // Instant local preview
       const reader = new FileReader();
       reader.onload = () => {
         setUploadedPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      try {
+        const res = await uploadPaymentScreenshot(file, `admin-qr-${Date.now()}`);
+        if (res.secureUrl) {
+          setUploadedPreview(res.secureUrl);
+          setNewQrInput(res.secureUrl);
+        }
+      } catch (err: any) {
+        console.warn("Cloudinary upload fallback to data URL", err);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
   const handleSave = () => {
-    const targetUrl = uploadedPreview || newQrInput.trim();
+    const targetUrl = newQrInput.trim() || uploadedPreview || currentQrUrl;
     if (targetUrl) {
       onUpdateQr(targetUrl);
       onClose();
@@ -75,24 +94,32 @@ export const QrManagerModal: React.FC<QrManagerModalProps> = ({
             <span className="text-[10px] font-orbitron text-gray-400 mb-2">
               ACTIVE QR CODE (PREVIEW)
             </span>
-            <div className="relative w-40 h-40 p-2 bg-white rounded-xl shadow-lg">
+            <div className="relative w-40 h-40 p-2 bg-white rounded-xl shadow-lg flex items-center justify-center">
               <Image
                 src={uploadedPreview || currentQrUrl}
                 alt="Active QR Code"
                 fill
+                unoptimized
                 className="object-contain p-1"
               />
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center text-cyan-400 font-orbitron text-xs flex-col space-y-1">
+                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+                  <span>Uploading...</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Upload New Image */}
           <div className="space-y-2">
             <label className="block p-3 rounded-xl border border-dashed border-cyan-500/40 bg-slate-900/60 hover:bg-slate-900 cursor-pointer text-xs font-orbitron text-cyan-400 flex items-center justify-center space-x-2">
-              <Upload className="w-4 h-4" />
-              <span>UPLOAD NEW QR IMAGE</span>
+              {isUploading ? <Loader2 className="w-4 h-4 animate-spin text-cyan-400" /> : <Upload className="w-4 h-4" />}
+              <span>{isUploading ? "UPLOADING TO CLOUDINARY..." : "UPLOAD NEW QR IMAGE"}</span>
               <input
                 type="file"
                 accept="image/*"
+                disabled={isUploading}
                 onChange={handleFileUpload}
                 className="hidden"
               />
