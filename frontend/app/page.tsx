@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
@@ -224,12 +225,25 @@ export default function Home() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/40 shadow-[0_0_20px_rgba(0,243,255,0.25)] backdrop-blur-xl"
+                    className="inline-flex items-center space-x-3 px-5 py-2.5 rounded-2xl bg-slate-950/80 border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(0,243,255,0.3)] backdrop-blur-xl group hover:border-cyan-400 transition-all duration-300"
                   >
-                    <Zap className="w-4 h-4 text-cyan-400 animate-pulse" />
-                    <span className="font-orbitron font-extrabold text-xs text-cyan-300 tracking-widest uppercase">
-                      {eventSettings.group} • CSI KARE
-                    </span>
+                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-cyan-400/60 p-0.5 bg-slate-900 flex-shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                      <Image
+                        src="/csi-logo.jpg"
+                        alt="CSI KARE Logo"
+                        width={48}
+                        height={48}
+                        className="object-contain rounded-lg w-full h-full"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <span className="font-orbitron font-black text-xs sm:text-sm text-cyan-300 tracking-widest uppercase block drop-shadow-[0_0_10px_rgba(0,243,255,0.4)]">
+                        {eventSettings.group} • CSI KARE
+                      </span>
+                      <span className="text-[10px] sm:text-xs text-gray-300 font-mono font-medium block">
+                        COMPUTER SOCIETY OF INDIA STUDENT CHAPTER
+                      </span>
+                    </div>
                   </motion.div>
 
                   <div className="font-orbitron font-black text-4xl sm:text-6xl lg:text-7xl leading-tight tracking-tight">

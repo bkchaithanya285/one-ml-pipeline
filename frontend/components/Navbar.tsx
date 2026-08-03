@@ -45,24 +45,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onRegisterClick, isLoggedIn: pro
   };
 
   return (
-    <nav className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#030712]/80 border-b border-cyan-500/20 shadow-[0_4px_30px_rgba(0,243,255,0.1)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <nav className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#030712]/90 border-b border-cyan-500/30 shadow-[0_4px_30px_rgba(0,243,255,0.15)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
         {/* LEFT: CSI KARE Logo & Chapter Branding */}
-        <Link href="/" className="flex items-center space-x-3 group">
-          <div className="relative w-11 h-11 rounded-xl overflow-hidden border border-cyan-500/40 p-0.5 bg-slate-900 group-hover:border-cyan-400 group-hover:shadow-[0_0_15px_#00f3ff] transition-all">
+        <Link href="/" className="flex items-center space-x-3.5 group">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-cyan-500/50 p-1 bg-slate-900 shadow-[0_0_25px_rgba(0,243,255,0.3)] group-hover:border-cyan-400 group-hover:shadow-[0_0_35px_#00f3ff] group-hover:scale-105 transition-all duration-300">
             <Image
               src="/csi-logo.jpg"
               alt="CSI KARE Logo"
-              width={44}
-              height={44}
-              className="object-contain rounded-lg"
+              width={64}
+              height={64}
+              className="object-contain rounded-xl w-full h-full"
             />
           </div>
           <div>
-            <span className="font-orbitron font-extrabold text-sm sm:text-base text-cyan-300 tracking-wider block group-hover:text-white transition-colors">
+            <span className="font-orbitron font-black text-base sm:text-lg lg:text-xl text-cyan-300 tracking-wider block group-hover:text-white transition-colors drop-shadow-[0_0_10px_rgba(0,243,255,0.5)]">
               CSI KARE
             </span>
-            <span className="text-[10px] text-gray-400 font-mono tracking-tight block">
+            <span className="text-xs sm:text-sm text-gray-300 font-mono font-bold tracking-wider block">
               STUDENT CHAPTER
             </span>
           </div>

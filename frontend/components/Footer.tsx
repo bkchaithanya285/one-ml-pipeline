@@ -11,21 +11,21 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         
         {/* LEFT: CSI KARE Branding */}
-        <div className="flex items-center space-x-3 text-center md:text-left">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-cyan-500/40 p-0.5 bg-slate-900 shadow-[0_0_12px_rgba(0,243,255,0.2)]">
+        <div className="flex items-center space-x-4 text-center md:text-left">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-cyan-500/50 p-1 bg-slate-900 shadow-[0_0_25px_rgba(0,243,255,0.3)]">
             <Image
               src="/csi-logo.jpg"
               alt="CSI KARE Logo"
-              width={40}
-              height={40}
-              className="object-contain rounded-lg"
+              width={64}
+              height={64}
+              className="object-contain rounded-xl w-full h-full"
             />
           </div>
           <div>
-            <span className="font-orbitron font-extrabold text-sm text-cyan-300 tracking-wider block">
+            <span className="font-orbitron font-black text-base sm:text-lg text-cyan-300 tracking-wider block drop-shadow-[0_0_10px_rgba(0,243,255,0.4)]">
               CSI KARE STUDENT CHAPTER
             </span>
-            <span className="text-[10px] text-gray-400 font-mono">
+            <span className="text-xs text-gray-300 font-mono font-medium block mt-0.5">
               CLAIM GROUP 3 • KALASALINGAM ACADEMY OF RESEARCH AND EDUCATION
             </span>
           </div>
