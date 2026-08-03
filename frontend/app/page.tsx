@@ -225,22 +225,22 @@ export default function Home() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="inline-flex items-center space-x-3 px-5 py-2.5 rounded-2xl bg-slate-950/80 border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(0,243,255,0.3)] backdrop-blur-xl group hover:border-cyan-400 transition-all duration-300"
+                    className="inline-flex items-center space-x-4 px-6 py-3.5 rounded-3xl bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_40px_rgba(0,243,255,0.4)] backdrop-blur-xl group hover:border-cyan-300 transition-all duration-300"
                   >
-                    <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden border border-cyan-400/60 p-0.5 bg-slate-900 flex-shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                    <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-cyan-400 p-1 bg-slate-900 flex-shrink-0 shadow-[0_0_25px_rgba(0,243,255,0.5)]">
                       <Image
                         src="/csi-logo.jpg"
                         alt="CSI KARE Logo"
-                        width={48}
-                        height={48}
-                        className="object-contain rounded-lg w-full h-full"
+                        width={96}
+                        height={96}
+                        className="object-contain rounded-xl w-full h-full"
                       />
                     </div>
                     <div className="text-left">
-                      <span className="font-orbitron font-black text-xs sm:text-sm text-cyan-300 tracking-widest uppercase block drop-shadow-[0_0_10px_rgba(0,243,255,0.4)]">
+                      <span className="font-orbitron font-black text-base sm:text-xl lg:text-2xl text-cyan-300 tracking-widest uppercase block drop-shadow-[0_0_15px_rgba(0,243,255,0.6)]">
                         {eventSettings.group} • CSI KARE
                       </span>
-                      <span className="text-[10px] sm:text-xs text-gray-300 font-mono font-medium block">
+                      <span className="text-xs sm:text-sm text-gray-200 font-mono font-bold block mt-0.5">
                         COMPUTER SOCIETY OF INDIA STUDENT CHAPTER
                       </span>
                     </div>

@@ -45,24 +45,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onRegisterClick, isLoggedIn: pro
   };
 
   return (
-    <nav className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#030712]/90 border-b border-cyan-500/30 shadow-[0_4px_30px_rgba(0,243,255,0.15)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+    <nav className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#030712]/95 border-b border-cyan-500/40 shadow-[0_6px_35px_rgba(0,243,255,0.2)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-28 sm:h-32 flex items-center justify-between">
         {/* LEFT: CSI KARE Logo & Chapter Branding */}
-        <Link href="/" className="flex items-center space-x-3.5 group">
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-cyan-500/50 p-1 bg-slate-900 shadow-[0_0_25px_rgba(0,243,255,0.3)] group-hover:border-cyan-400 group-hover:shadow-[0_0_35px_#00f3ff] group-hover:scale-105 transition-all duration-300">
+        <Link href="/" className="flex items-center space-x-4 group">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-cyan-400 p-1 bg-slate-900 shadow-[0_0_30px_rgba(0,243,255,0.4)] group-hover:border-cyan-300 group-hover:shadow-[0_0_45px_#00f3ff] group-hover:scale-105 transition-all duration-300">
             <Image
               src="/csi-logo.jpg"
               alt="CSI KARE Logo"
-              width={64}
-              height={64}
+              width={96}
+              height={96}
               className="object-contain rounded-xl w-full h-full"
             />
           </div>
           <div>
-            <span className="font-orbitron font-black text-base sm:text-lg lg:text-xl text-cyan-300 tracking-wider block group-hover:text-white transition-colors drop-shadow-[0_0_10px_rgba(0,243,255,0.5)]">
+            <span className="font-orbitron font-black text-xl sm:text-2xl lg:text-3xl text-cyan-300 tracking-wider block group-hover:text-white transition-colors drop-shadow-[0_0_15px_rgba(0,243,255,0.6)]">
               CSI KARE
             </span>
-            <span className="text-xs sm:text-sm text-gray-300 font-mono font-bold tracking-wider block">
+            <span className="text-xs sm:text-sm lg:text-base text-gray-200 font-mono font-extrabold tracking-wider block mt-0.5">
               STUDENT CHAPTER
             </span>
           </div>
