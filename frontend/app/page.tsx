@@ -158,6 +158,15 @@ export default function Home() {
       return;
     }
 
+    if (isRegistrationClosed) {
+      if (googleAuthUser) {
+        alert(`Registrations are closed. No existing registration found for account (${googleAuthUser.email}).`);
+      } else {
+        alert("Registrations are closed. No new registrations are being accepted.");
+      }
+      return;
+    }
+
     if (googleAuthUser) {
       const record = await getRegistrationByEmailOrUid(googleAuthUser.email, googleAuthUser.uid);
       if (record) {
@@ -166,10 +175,6 @@ export default function Home() {
           localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
         }
         setCurrentStep("existingRecord");
-        return;
-      }
-      if (isRegistrationClosed) {
-        alert(`Registrations are closed. No existing registration found for account (${googleAuthUser.email}).`);
         return;
       }
       setCurrentStep("instructions");
@@ -199,14 +204,6 @@ export default function Home() {
         setCurrentStep("existingRecord");
         return;
       }
-
-      if (isRegistrationClosed) {
-        alert(`Registrations are closed. No existing registration was found for Google account (${user.email}).`);
-        return;
-      }
-
-      // User authenticated with Google. STAY ON LANDING PAGE as requested!
-      // The googleAuthUser state is set, so the landing page button updates to "CONTINUE REGISTRATION →".
     }
   };
 
