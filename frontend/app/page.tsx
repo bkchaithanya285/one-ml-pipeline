@@ -28,6 +28,7 @@ import {
   subscribeRegistrations,
   subscribeEventSettings,
   getEventSettings,
+  getLocalSettings,
   getRegistrationByEmailOrUid,
   DEFAULT_SETTINGS,
 } from "@/lib/firebase/firestore";
@@ -42,7 +43,7 @@ const LOCAL_STORAGE_STUDENT_EMAIL = "csi_kare_student_email";
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<Step>("landing");
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [eventSettings, setEventSettings] = useState<EventSettings>(DEFAULT_SETTINGS);
+  const [eventSettings, setEventSettings] = useState<EventSettings>(() => getLocalSettings());
 
   const [formData, setFormData] = useState<RegistrationFormData | null>(null);
   const [createdRegId, setCreatedRegId] = useState<string>("");

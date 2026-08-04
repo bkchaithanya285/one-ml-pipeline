@@ -87,7 +87,7 @@ function saveLocalRegistrations(regs: Registration[]) {
   }
 }
 
-function getLocalSettings(): EventSettings {
+export function getLocalSettings(): EventSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
     const data = localStorage.getItem(LOCAL_STORAGE_KEY_SETTINGS);
@@ -186,6 +186,9 @@ export async function updateEventSettings(
 export function subscribeEventSettings(
   callback: (settings: EventSettings) => void
 ) {
+  // Synchronously fire local settings first to eliminate initial UI flickering
+  callback(getLocalSettings());
+
   const handleCustomUpdate = (e: any) => {
     if (e.detail) {
       callback(e.detail);
