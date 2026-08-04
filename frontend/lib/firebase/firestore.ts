@@ -108,6 +108,7 @@ function saveLocalSettings(settings: EventSettings) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    window.dispatchEvent(new CustomEvent("csi_kare_settings_updated", { detail: settings }));
   } catch (e) {
     console.error("Local storage save settings error", e);
   }

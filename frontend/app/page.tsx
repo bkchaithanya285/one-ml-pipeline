@@ -27,6 +27,7 @@ import { ExistingRegistrationView } from "@/components/registration/ExistingRegi
 import {
   subscribeRegistrations,
   subscribeEventSettings,
+  getEventSettings,
   getRegistrationByEmailOrUid,
   DEFAULT_SETTINGS,
 } from "@/lib/firebase/firestore";
@@ -77,6 +78,11 @@ export default function Home() {
       setEventSettings(sets);
     });
 
+    // Fetch initial event settings immediately on mount from Admin configuration
+    getEventSettings().then((sets) => {
+      if (sets) setEventSettings(sets);
+    });
+
     // Asynchronously restore session without blocking landing page render
     const checkUserSession = async (userEmail?: string, userUid?: string, userDisplayName?: string) => {
       const emailToCheck =
@@ -98,8 +104,9 @@ export default function Home() {
               uid: userUid,
               displayName: cleanStudentName(userDisplayName || ""),
             });
-          }
-          if (typeof window !== "undefined") {
+            // Direct instant redirection to instructions after Google sign-in
+            setCurrentStep("instructions");
+          } else if (typeof window !== "undefined") {
             const hasDraft = localStorage.getItem("csi_kare_registration_draft_v1");
             const savedStep = localStorage.getItem("csi_kare_current_step");
             if (hasDraft || savedStep === "form" || savedStep === "instructions") {

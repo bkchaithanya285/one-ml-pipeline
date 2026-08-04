@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { RegistrationFormData } from "./RegistrationForm";
 import { uploadPaymentScreenshot } from "@/lib/cloudinary";
@@ -38,6 +39,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onSuccess,
 }) => {
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const [showUpiInstructions, setShowUpiInstructions] = useState(false);
   const [transactionId, setTransactionId] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -152,10 +154,37 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             Payment Interface
           </h2>
           <p className="text-xs text-gray-400 font-mono">
-            REGISTRATION FEE: ₹100 • UPI TRANSFER
+            REGISTRATION FEE: ₹{fee} • UPI TRANSFER
           </p>
         </div>
       </div>
+
+      {showUpiInstructions && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="my-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-cyan-950/90 border-2 border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)] text-emerald-100 font-sans space-y-2"
+        >
+          <div className="flex items-center space-x-2 text-emerald-300 font-orbitron font-extrabold text-xs sm:text-sm uppercase tracking-wider">
+            <Sparkles className="w-5 h-5 text-emerald-400 animate-spin flex-shrink-0" />
+            <span>PAYMENT INSTRUCTION & NEXT STEPS</span>
+          </div>
+          <div className="text-xs space-y-1.5 font-mono text-gray-200">
+            <div className="flex items-start space-x-2">
+              <span className="font-bold text-emerald-400">Step 1:</span>
+              <span>Complete payment of <strong className="text-amber-300 font-bold">₹{fee}</strong> in your UPI app (GPay / PhonePe / Paytm / BHIM).</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <span className="font-bold text-emerald-400">Step 2:</span>
+              <span>Copy the <strong className="text-cyan-300 font-bold">12-Digit UTR / Transaction Ref No</strong> from your payment summary and paste it in the UTR field below.</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <span className="font-bold text-emerald-400">Step 3:</span>
+              <span>Take a screenshot of the payment receipt and upload it in the upload area below to finalize registration.</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
         {/* Left Column: QR Code Card */}
@@ -195,7 +224,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   href={upiDeepLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-xl font-orbitron font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:shadow-[0_0_35px_rgba(16,185,129,0.9)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  onClick={() => setShowUpiInstructions(true)}
+                  className="w-full py-3.5 px-4 rounded-xl font-orbitron font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-black shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:shadow-[0_0_40px_rgba(16,185,129,1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer border-2 border-emerald-300"
                 >
                   <ExternalLink className="w-4 h-4 text-black flex-shrink-0" />
                   <span>PAY USING UPI APP (GPay / PhonePe / Paytm)</span>
