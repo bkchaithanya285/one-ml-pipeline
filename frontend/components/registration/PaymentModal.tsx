@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { RegistrationFormData } from "./RegistrationForm";
 import { uploadPaymentScreenshot } from "@/lib/cloudinary";
-import { createRegistration } from "@/lib/firebase/firestore";
+import { createRegistration, getEventSettings } from "@/lib/firebase/firestore";
 
 interface PaymentModalProps {
   formData: RegistrationFormData;
@@ -115,6 +115,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setIsSubmittingRecord(true);
 
     try {
+      const freshSettings = await getEventSettings();
+      if (freshSettings && !freshSettings.registrationEnabled) {
+        setUploadError("Registrations have been closed by admin. Submissions are no longer accepted.");
+        setIsSubmittingRecord(false);
+        return;
+      }
+
       const regId = await createRegistration({
         uid: formData.uid,
         name: formData.fullName,

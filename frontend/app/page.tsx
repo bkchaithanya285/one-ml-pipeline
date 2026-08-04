@@ -96,7 +96,6 @@ export default function Home() {
           if (typeof window !== "undefined") {
             localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
           }
-          setCurrentStep("existingRecord");
         } else {
           setExistingRecord(null);
           if (userEmail && userUid) {
@@ -105,14 +104,6 @@ export default function Home() {
               uid: userUid,
               displayName: cleanStudentName(userDisplayName || ""),
             });
-            // Direct instant redirection to instructions after Google sign-in
-            setCurrentStep("instructions");
-          } else if (typeof window !== "undefined") {
-            const hasDraft = localStorage.getItem("csi_kare_registration_draft_v1");
-            const savedStep = localStorage.getItem("csi_kare_current_step");
-            if (hasDraft || savedStep === "form" || savedStep === "instructions") {
-              setCurrentStep("form");
-            }
           }
         }
       }
@@ -130,6 +121,8 @@ export default function Home() {
     const unsubAuth = subscribeAuthState((user) => {
       if (user && user.email) {
         checkUserSession(user.email, user.uid, user.displayName || "");
+      } else {
+        setGoogleAuthUser(null);
       }
     });
 
@@ -152,6 +145,13 @@ export default function Home() {
   const isRegistrationClosed =
     !eventSettings.registrationEnabled || spotsLeft === 0;
 
+  // Guard: If registration is closed and user has no existing record, force reset to landing page
+  useEffect(() => {
+    if (isRegistrationClosed && !existingRecord && currentStep !== "landing") {
+      setCurrentStep("landing");
+    }
+  }, [isRegistrationClosed, existingRecord, currentStep]);
+
   const handleStartRegistrationFlow = async () => {
     if (existingRecord) {
       setCurrentStep("existingRecord");
@@ -169,7 +169,7 @@ export default function Home() {
         return;
       }
       if (isRegistrationClosed) {
-        alert(`Registrations are closed. No existing registration found for account ${googleAuthUser.email}.`);
+        alert(`Registrations are closed. No existing registration found for account (${googleAuthUser.email}).`);
         return;
       }
       setCurrentStep("instructions");
@@ -205,8 +205,8 @@ export default function Home() {
         return;
       }
 
-      // Direct instant redirection to instructions/form
-      setCurrentStep("instructions");
+      // User authenticated with Google. STAY ON LANDING PAGE as requested!
+      // The googleAuthUser state is set, so the landing page button updates to "CONTINUE REGISTRATION →".
     }
   };
 
@@ -363,7 +363,11 @@ export default function Home() {
                         {existingRecord
                           ? "VIEW MY REGISTRATION / TICKET"
                           : isRegistrationClosed
-                          ? "LOGIN TO VIEW TICKET"
+                          ? googleAuthUser
+                            ? "REGISTRATION CLOSED"
+                            : "LOGIN TO VIEW TICKET"
+                          : googleAuthUser
+                          ? "CONTINUE REGISTRATION →"
                           : "REGISTER NOW"}
                       </span>
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
