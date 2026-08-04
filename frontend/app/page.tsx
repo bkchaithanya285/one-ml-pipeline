@@ -468,7 +468,7 @@ export default function Home() {
         </AnimatePresence>
       </div>
 
-      <Footer />
+      {currentStep === "landing" && <Footer />}
     </main>
   );
 }
