@@ -16,6 +16,9 @@ import {
   Copy,
   Check,
   Sparkles,
+  Zap,
+  Smartphone,
+  ShieldCheck,
 } from "lucide-react";
 import { RegistrationFormData } from "./RegistrationForm";
 import { uploadPaymentScreenshot } from "@/lib/cloudinary";
@@ -219,16 +222,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             };
 
             return (
-              <div className="w-full mt-4 space-y-2.5">
+              <div className="w-full mt-4 space-y-3">
                 <a
                   href={upiDeepLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setShowUpiInstructions(true)}
-                  className="w-full py-3.5 px-4 rounded-xl font-orbitron font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-black shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:shadow-[0_0_40px_rgba(16,185,129,1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer border-2 border-emerald-300"
+                  className="relative group w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-slate-950 font-orbitron font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_35px_rgba(16,185,129,0.7)] hover:shadow-[0_0_55px_rgba(16,185,129,1)] hover:scale-[1.03] active:scale-95 transition-all duration-300 border-2 border-emerald-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer"
                 >
-                  <ExternalLink className="w-4 h-4 text-black flex-shrink-0" />
-                  <span>PAY USING UPI APP (GPay / PhonePe / Paytm)</span>
+                  {/* Animated Shimmer sweep */}
+                  <span className="absolute inset-0 bg-white/30 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+
+                  {/* Main Action Line */}
+                  <span className="relative z-10 flex items-center space-x-2 text-slate-950 font-black">
+                    <Zap className="w-5 h-5 fill-slate-950 text-slate-950 animate-bounce" />
+                    <span>CLICK TO PAY VIA UPI APP</span>
+                    <ExternalLink className="w-4 h-4 text-slate-950 flex-shrink-0" />
+                  </span>
+
+                  {/* App Badges Subtext */}
+                  <span className="relative z-10 mt-1 flex items-center space-x-1.5 text-[9px] font-mono font-extrabold tracking-normal">
+                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">GPay</span>
+                    <span>•</span>
+                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">PhonePe</span>
+                    <span>•</span>
+                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">Paytm</span>
+                    <span>•</span>
+                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">BHIM</span>
+                  </span>
                 </a>
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
