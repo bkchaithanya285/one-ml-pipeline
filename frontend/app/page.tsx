@@ -407,7 +407,7 @@ export default function Home() {
               </section>
 
               <section>
-                <CountdownTimer deadlineIso={eventSettings.deadline} />
+                <CountdownTimer deadlineIso={eventSettings.deadline} isClosed={isRegistrationClosed} />
               </section>
             </motion.div>
           )}

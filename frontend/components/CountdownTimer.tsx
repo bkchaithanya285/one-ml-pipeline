@@ -5,18 +5,20 @@ import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
 
 interface CountdownTimerProps {
-  deadlineIso?: string; // e.g. "2026-08-08T23:59:59"
+  deadlineIso?: string;
+  isClosed?: boolean;
 }
 
 export const CountdownTimer: React.FC<CountdownTimerProps> = ({
-  deadlineIso = "2026-08-08T23:59:59",
+  deadlineIso = "2026-08-01T00:00:00",
+  isClosed = false,
 }) => {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
-    isExpired: false,
+    isExpired: true,
   });
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       const now = new Date().getTime();
       const difference = targetDate - now;
 
-      if (difference <= 0) {
+      if (difference <= 0 || isClosed) {
         setTimeLeft({
           days: 0,
           hours: 0,
@@ -51,14 +53,30 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     calculateTime();
     const interval = setInterval(calculateTime, 1000);
     return () => clearInterval(interval);
-  }, [deadlineIso]);
+  }, [deadlineIso, isClosed]);
+
+  if (isClosed || timeLeft.isExpired) {
+    return (
+      <div className="w-full max-w-xl mx-auto my-8 p-6 rounded-3xl bg-slate-950/90 border-2 border-red-500/60 shadow-[0_0_40px_rgba(239,68,68,0.3)] backdrop-blur-xl text-center space-y-2">
+        <div className="flex items-center justify-center space-x-2 text-red-500">
+          <Clock className="w-5 h-5" />
+          <span className="font-orbitron font-extrabold text-sm sm:text-base uppercase tracking-widest text-neon-glow">
+            REGISTRATIONS PERMANENTLY CLOSED
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm text-gray-300 font-mono">
+          Official registration deadline has passed. Sign in with your registered Google account to view your QR Ticket & Event Pass.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-xl mx-auto my-8">
       <div className="text-center mb-4 flex items-center justify-center space-x-2">
         <Clock className="w-4 h-4 text-cyan-400 animate-spin" />
         <span className="font-orbitron font-bold text-xs uppercase tracking-widest text-cyan-300">
-          Registration Ends In
+          Registration Countdown
         </span>
       </div>
 
