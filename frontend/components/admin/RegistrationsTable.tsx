@@ -55,7 +55,7 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
 
   const filteredRegistrations = useMemo(() => {
-    return registrations.filter((reg) => {
+    const list = registrations.filter((reg) => {
       const search = searchTerm.toLowerCase();
       const matchesSearch =
         reg.name.toLowerCase().includes(search) ||
@@ -67,11 +67,17 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
       const matchesStatus =
         statusFilter === "ALL" || reg.paymentStatus === statusFilter;
       const matchesDept =
-        deptFilter === "ALL" || reg.department === deptFilter;
+        deptFilter === "ALL" ||
+        reg.department === deptFilter ||
+        (deptFilter === "CSE" && reg.department.startsWith("CSE"));
       const matchesYear = yearFilter === "ALL" || reg.year === yearFilter;
 
       return matchesSearch && matchesStatus && matchesDept && matchesYear;
     });
+
+    return list.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }, [registrations, searchTerm, statusFilter, deptFilter, yearFilter]);
 
   const handleConfirmReject = () => {
@@ -128,7 +134,9 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
           >
             <option value="ALL">Dept: All</option>
             <option value="CSE">CSE</option>
+            <option value="CSE (AI & ML)">CSE (AI & ML)</option>
             <option value="ECE">ECE</option>
+            <option value="IT">IT</option>
             <option value="EEE">EEE</option>
             <option value="MECH">MECH</option>
             <option value="CIVIL">CIVIL</option>

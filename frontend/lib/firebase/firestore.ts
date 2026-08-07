@@ -268,6 +268,7 @@ export function subscribeRegistrations(
           const data = docSnap.data() as Registration;
           list.push({ ...data, id: docSnap.id });
         });
+        saveLocalRegistrations(list);
         callback(list);
       },
       (error) => {
