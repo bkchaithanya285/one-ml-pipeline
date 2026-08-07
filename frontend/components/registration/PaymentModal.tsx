@@ -12,11 +12,9 @@ import {
   ArrowLeft,
   Lock,
   Hash,
-  ExternalLink,
   Copy,
   Check,
   Sparkles,
-  Zap,
   Smartphone,
   ShieldCheck,
 } from "lucide-react";
@@ -42,7 +40,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onSuccess,
 }) => {
   const [copiedUpi, setCopiedUpi] = useState(false);
-  const [showUpiInstructions, setShowUpiInstructions] = useState(false);
   const [transactionId, setTransactionId] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -169,33 +166,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </div>
       </div>
 
-      {showUpiInstructions && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="my-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-cyan-950/90 border-2 border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)] text-emerald-100 font-sans space-y-2"
-        >
-          <div className="flex items-center space-x-2 text-emerald-300 font-orbitron font-extrabold text-xs sm:text-sm uppercase tracking-wider">
-            <Sparkles className="w-5 h-5 text-emerald-400 animate-spin flex-shrink-0" />
-            <span>PAYMENT INSTRUCTION & NEXT STEPS</span>
-          </div>
-          <div className="text-xs space-y-1.5 font-mono text-gray-200">
-            <div className="flex items-start space-x-2">
-              <span className="font-bold text-emerald-400">Step 1:</span>
-              <span>Complete payment of <strong className="text-amber-300 font-bold">₹{fee}</strong> in your UPI app (GPay / PhonePe / Paytm / BHIM).</span>
-            </div>
-            <div className="flex items-start space-x-2">
-              <span className="font-bold text-emerald-400">Step 2:</span>
-              <span>Copy the <strong className="text-cyan-300 font-bold">12-Digit UTR / Transaction Ref No</strong> from your payment summary and paste it in the UTR field below.</span>
-            </div>
-            <div className="flex items-start space-x-2">
-              <span className="font-bold text-emerald-400">Step 3:</span>
-              <span>Take a screenshot of the payment receipt and upload it in the upload area below to finalize registration.</span>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
         {/* Left Column: QR Code Card */}
         <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-slate-900/90 border border-cyan-500/30 shadow-[0_0_20px_rgba(0,243,255,0.1)] group hover:border-cyan-400 transition-colors text-center">
@@ -213,12 +183,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             />
           </div>
 
-          {/* Interactive Pay via UPI App & Copy UPI ID Buttons */}
+          {/* Copy UPI ID Button */}
           {(() => {
             const activeUpiId = qrCodeUrl.match(/pa=([^&]+)/)?.[1]
               ? decodeURIComponent(qrCodeUrl.match(/pa=([^&]+)/)![1])
               : (upiId || "csikare@upi");
-            const upiDeepLink = `upi://pay?pa=${encodeURIComponent(activeUpiId)}&pn=${encodeURIComponent("CSI KARE STUDENT CHAPTER")}&am=${fee}&cu=INR&tn=${encodeURIComponent("CSI KARE ML Workshop")}`;
 
             const handleCopyUpi = () => {
               if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -229,36 +198,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             };
 
             return (
-              <div className="w-full mt-4 space-y-3">
-                <a
-                  href={upiDeepLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setShowUpiInstructions(true)}
-                  className="relative group w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-slate-950 font-orbitron font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_35px_rgba(16,185,129,0.7)] hover:shadow-[0_0_55px_rgba(16,185,129,1)] hover:scale-[1.03] active:scale-95 transition-all duration-300 border-2 border-emerald-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer"
-                >
-                  {/* Animated Shimmer sweep */}
-                  <span className="absolute inset-0 bg-white/30 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-
-                  {/* Main Action Line */}
-                  <span className="relative z-10 flex items-center space-x-2 text-slate-950 font-black">
-                    <Zap className="w-5 h-5 fill-slate-950 text-slate-950 animate-bounce" />
-                    <span>CLICK TO PAY VIA UPI APP</span>
-                    <ExternalLink className="w-4 h-4 text-slate-950 flex-shrink-0" />
-                  </span>
-
-                  {/* App Badges Subtext */}
-                  <span className="relative z-10 mt-1 flex items-center space-x-1.5 text-[9px] font-mono font-extrabold tracking-normal">
-                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">GPay</span>
-                    <span>•</span>
-                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">PhonePe</span>
-                    <span>•</span>
-                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">Paytm</span>
-                    <span>•</span>
-                    <span className="bg-slate-950/20 px-1.5 py-0.5 rounded text-slate-950">BHIM</span>
-                  </span>
-                </a>
-
+              <div className="w-full mt-4">
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
                   <div className="flex items-center space-x-1.5 text-gray-300 truncate">
                     <span className="text-[10px] text-gray-500 uppercase font-orbitron">UPI ID:</span>
