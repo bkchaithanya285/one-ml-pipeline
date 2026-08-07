@@ -721,3 +721,31 @@ export async function deleteAllAttendanceSessions(): Promise<void> {
     await Promise.all(deletePromises);
   } catch (e) {}
 }
+
+export async function updateStudentSelfRegistration(
+  regId: string,
+  updatedData: Partial<Registration>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const payload = {
+      ...updatedData,
+      isEdited: true,
+      hasEditedOnce: true,
+      editedAt: new Date().toISOString(),
+    };
+
+    const local = getLocalRegistrations();
+    const idx = local.findIndex((r) => r.id === regId);
+    if (idx !== -1) {
+      local[idx] = { ...local[idx], ...payload };
+      saveLocalRegistrations(local);
+    }
+
+    const docRef = doc(db, "registrations", regId);
+    await updateDoc(docRef, payload);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error updating student registration:", err);
+    return { success: false, error: err.message || "Failed to save details." };
+  }
+}

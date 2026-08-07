@@ -20,6 +20,9 @@ export interface Registration {
   registrationStatus: RegistrationStatus;
   rejectionReason?: string;
   createdAt: string;
+  isEdited?: boolean;
+  hasEditedOnce?: boolean;
+  editedAt?: string;
 }
 
 export type ResidencyOption = "Hosteller" | "Day Scholar";
