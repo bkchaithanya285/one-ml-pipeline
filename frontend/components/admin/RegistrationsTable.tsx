@@ -76,7 +76,7 @@ export const RegistrationsTable: React.FC<RegistrationsTableProps> = ({
     });
 
     return list.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
   }, [registrations, searchTerm, statusFilter, deptFilter, yearFilter]);
 
