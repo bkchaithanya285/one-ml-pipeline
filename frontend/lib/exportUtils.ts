@@ -1,6 +1,15 @@
 import * as XLSX from "xlsx";
 import { Registration, AttendanceRecord } from "@/types";
 
+function cleanFieldValue(val: any): string {
+  if (val === null || val === undefined) return "N/A";
+  let str = String(val).trim();
+  if (str.startsWith("data:image")) {
+    return "[Base64 Screenshot Data]";
+  }
+  return str.replace(/[\r\n]+/g, " ");
+}
+
 function getXLSXModule() {
   if (XLSX && XLSX.utils && typeof XLSX.utils.json_to_sheet === "function") {
     return XLSX;
@@ -43,21 +52,21 @@ export function exportToExcel(
 
     const data = registrations.map((r, index) => ({
       "S.No": index + 1,
-      "Full Name": r.name || "N/A",
-      "Register Number": r.registerNumber || "N/A",
-      "UPI / UTR Transaction ID": r.transactionId || "N/A",
-      "Email Address": r.email || "N/A",
-      "Phone Number": r.phone || "N/A",
-      Department: r.department || "N/A",
-      Year: r.year || "N/A",
-      Section: r.section || "N/A",
-      "Residency Status": r.residency || "N/A",
-      "Payment Status": r.paymentStatus || "Pending",
-      "Registration Status": r.registrationStatus || "Registered",
-      "Rejection Reason": r.rejectionReason || "N/A",
-      "Cloudinary Public ID": r.cloudinaryPublicId || "N/A",
-      "Payment Screenshot URL": r.paymentScreenshot || "N/A",
-      "Registration Time": r.createdAt ? new Date(r.createdAt).toLocaleString("en-IN") : "N/A",
+      "Full Name": cleanFieldValue(r.name),
+      "Register Number": cleanFieldValue(r.registerNumber),
+      "UPI / UTR Transaction ID": cleanFieldValue(r.transactionId),
+      "Email Address": cleanFieldValue(r.email),
+      "Phone Number": cleanFieldValue(r.phone),
+      Department: cleanFieldValue(r.department),
+      Year: cleanFieldValue(r.year),
+      Section: cleanFieldValue(r.section),
+      "Residency Status": cleanFieldValue(r.residency),
+      "Payment Status": cleanFieldValue(r.paymentStatus),
+      "Registration Status": cleanFieldValue(r.registrationStatus),
+      "Rejection Reason": cleanFieldValue(r.rejectionReason),
+      "Cloudinary Public ID": cleanFieldValue(r.cloudinaryPublicId),
+      "Payment Screenshot URL": cleanFieldValue(r.paymentScreenshot),
+      "Registration Time": r.createdAt ? cleanFieldValue(new Date(r.createdAt).toLocaleString("en-IN")) : "N/A",
     }));
 
     if (xlsxLib && xlsxLib.utils && typeof xlsxLib.utils.json_to_sheet === "function") {
@@ -125,21 +134,21 @@ export function exportToCSV(
 
     const rows = registrations.map((r, index) => [
       index + 1,
-      `"${(r.name || "").replace(/"/g, '""')}"`,
-      `"${r.registerNumber || ""}"`,
-      `"${r.transactionId || ""}"`,
-      `"${r.email || ""}"`,
-      `"${r.phone || ""}"`,
-      `"${r.department || ""}"`,
-      `"${r.year || ""}"`,
-      `"${r.section || ""}"`,
-      `"${r.residency || ""}"`,
-      `"${r.paymentStatus || ""}"`,
-      `"${r.registrationStatus || ""}"`,
-      `"${(r.rejectionReason || "").replace(/"/g, '""')}"`,
-      `"${r.cloudinaryPublicId || ""}"`,
-      `"${r.paymentScreenshot || ""}"`,
-      `"${r.createdAt ? new Date(r.createdAt).toLocaleString("en-IN") : "N/A"}"`,
+      `"${cleanFieldValue(r.name).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.registerNumber).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.transactionId).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.email).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.phone).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.department).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.year).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.section).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.residency).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.paymentStatus).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.registrationStatus).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.rejectionReason).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.cloudinaryPublicId).replace(/"/g, '""')}"`,
+      `"${cleanFieldValue(r.paymentScreenshot).replace(/"/g, '""')}"`,
+      `"${r.createdAt ? cleanFieldValue(new Date(r.createdAt).toLocaleString("en-IN")) : "N/A"}"`,
     ]);
 
     const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
@@ -178,18 +187,18 @@ export function exportAttendanceToExcel(
 
       return {
         "S.No": index + 1,
-        "Full Name": r.name,
-        "Register Number": r.registerNumber,
-        Department: r.department,
-        Year: r.year,
-        Section: r.section || "N/A",
-        "Residency Status": r.residency || "N/A",
-        "Email Address": r.email,
-        "Phone Number": r.phone,
+        "Full Name": cleanFieldValue(r.name),
+        "Register Number": cleanFieldValue(r.registerNumber),
+        Department: cleanFieldValue(r.department),
+        Year: cleanFieldValue(r.year),
+        Section: cleanFieldValue(r.section),
+        "Residency Status": cleanFieldValue(r.residency),
+        "Email Address": cleanFieldValue(r.email),
+        "Phone Number": cleanFieldValue(r.phone),
         "Attendance Status": isPresent ? "PRESENT" : "ABSENT",
         "Scanned Time": isPresent && rec ? new Date(rec.scannedAt).toLocaleTimeString("en-IN") : "N/A",
-        "Session Title": sessionName,
-        "Payment Status": r.paymentStatus,
+        "Session Title": cleanFieldValue(sessionName),
+        "Payment Status": cleanFieldValue(r.paymentStatus),
       };
     });
 
@@ -223,5 +232,6 @@ export function exportAttendanceToExcel(
     console.error("Attendance Excel Export error:", err);
   }
 }
+
 
 
