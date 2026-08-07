@@ -48,6 +48,7 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
     section: registration.section || "",
     residency: registration.residency || "Day Scholar",
     transactionId: registration.transactionId || "",
+    paymentScreenshot: registration.paymentScreenshot || "",
   });
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
       section: registration.section || "",
       residency: registration.residency || "Day Scholar",
       transactionId: registration.transactionId || "",
+      paymentScreenshot: registration.paymentScreenshot || "",
     });
   }, [registration]);
 
@@ -101,6 +103,7 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
       section: editForm.section.toUpperCase().trim(),
       residency: editForm.residency,
       transactionId: editForm.transactionId.toUpperCase().trim(),
+      paymentScreenshot: editForm.paymentScreenshot,
     };
 
     const result = await updateStudentSelfRegistration(currentReg.id, updatedFields);
@@ -628,6 +631,40 @@ export const ExistingRegistrationView: React.FC<ExistingRegistrationViewProps> =
                     onChange={(e) => setEditForm({ ...editForm, transactionId: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-amber-400 focus:outline-none uppercase"
                   />
+                </div>
+
+                {/* Payment Screenshot Proof Editor */}
+                <div>
+                  <label className="block text-[10px] font-orbitron uppercase text-gray-400 mb-1">
+                    Update Payment Proof Screenshot
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          if (reader.result) {
+                            setEditForm({ ...editForm, paymentScreenshot: reader.result as string });
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-orbitron file:font-bold file:bg-amber-500 file:text-black hover:file:bg-amber-400 cursor-pointer"
+                  />
+                  {editForm.paymentScreenshot && (
+                    <div className="mt-2 relative w-full h-28 rounded-xl overflow-hidden border border-amber-500/40 bg-black">
+                      <Image
+                        src={editForm.paymentScreenshot}
+                        alt="Payment Screenshot Preview"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Submit Actions */}
