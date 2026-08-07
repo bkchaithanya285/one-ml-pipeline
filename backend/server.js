@@ -21,8 +21,8 @@ let eventSettings = {
   venue: "8th Block Seminar Hall",
   fee: 100,
   maxSpots: 150,
-  deadline: "2026-08-08T23:59:59",
-  registrationEnabled: true,
+  deadline: "2026-08-07T12:00:00.000Z",
+  registrationEnabled: false,
   qrCodeUrl:
     "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=csikare@upi&pn=CSI%20KARE%20STUDENT%20CHAPTER&am=100&cu=INR",
 };
