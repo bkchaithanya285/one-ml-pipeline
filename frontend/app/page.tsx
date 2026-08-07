@@ -160,9 +160,44 @@ export default function Home() {
 
     if (isRegistrationClosed) {
       if (googleAuthUser) {
-        alert(`Registrations are closed. No existing registration found for account (${googleAuthUser.email}).`);
+        const record = await getRegistrationByEmailOrUid(googleAuthUser.email, googleAuthUser.uid);
+        if (record) {
+          setExistingRecord(record);
+          if (typeof window !== "undefined") {
+            localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
+          }
+          setCurrentStep("existingRecord");
+          return;
+        } else {
+          alert(`Registrations are closed. No existing registration record found for (${googleAuthUser.email}).`);
+        }
       } else {
-        alert("Registrations are closed. No new registrations are being accepted.");
+        const { user, error } = await signInWithGoogleDomain();
+        if (error) {
+          alert(error);
+          return;
+        }
+
+        if (user && user.email) {
+          const authUser = {
+            email: user.email,
+            uid: user.uid,
+            displayName: cleanStudentName(user.displayName || ""),
+          };
+          setGoogleAuthUser(authUser);
+
+          const record = await getRegistrationByEmailOrUid(user.email, user.uid);
+          if (record) {
+            setExistingRecord(record);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(LOCAL_STORAGE_STUDENT_EMAIL, record.email);
+            }
+            setCurrentStep("existingRecord");
+            return;
+          } else {
+            alert(`Registrations are closed. No registration record found for account (${user.email}).`);
+          }
+        }
       }
       return;
     }
@@ -360,9 +395,7 @@ export default function Home() {
                         {existingRecord
                           ? "VIEW MY REGISTRATION / TICKET"
                           : isRegistrationClosed
-                          ? googleAuthUser
-                            ? "REGISTRATION CLOSED"
-                            : "LOGIN TO VIEW TICKET"
+                          ? "GOOGLE LOGIN TO VIEW TICKET"
                           : googleAuthUser
                           ? "CONTINUE REGISTRATION →"
                           : "REGISTER NOW"}
