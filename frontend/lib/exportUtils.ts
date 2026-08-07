@@ -4,7 +4,7 @@ import { Registration, AttendanceRecord } from "@/types";
 function cleanFieldValue(val: any): string {
   if (val === null || val === undefined) return "N/A";
   let str = String(val).trim();
-  if (str.startsWith("data:image")) {
+  if (str.startsWith("data:") || (str.length > 300 && !str.startsWith("http"))) {
     return "[Base64 Screenshot Data]";
   }
   return str.replace(/[\r\n]+/g, " ");
