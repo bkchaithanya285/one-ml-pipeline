@@ -57,6 +57,7 @@ export interface EventSettings {
   qrCodeUrl: string;
   posterUrl?: string;
   upiId?: string;
+  volunteerPasscode?: string;
 }
 
 export interface AdminUser {

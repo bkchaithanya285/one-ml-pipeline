@@ -9,9 +9,12 @@ import {
   query,
   where,
   onSnapshot,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "./config";
 import { Registration, EventSettings, AttendanceSession, AttendanceRecord } from "@/types";
+
+import { CLEAN_ALL_REGISTRATIONS } from "@/lib/cleanRegistrationsData";
 
 // Default Initial Event Settings as specified in requirements
 export const DEFAULT_SETTINGS: EventSettings = {
@@ -23,43 +26,24 @@ export const DEFAULT_SETTINGS: EventSettings = {
   eventTime: "10:00 AM IST",
   venue: "8th Block Seminar Hall",
   fee: 100,
-  maxSpots: 150,
+  maxSpots: 300,
   deadline: "2026-08-07T12:00:00.000Z",
   registrationEnabled: false,
   qrCodeUrl:
     "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=csikare@upi&pn=CSI%20KARE%20STUDENT%20CHAPTER&am=100&cu=INR",
   upiId: "csikare@upi",
+  volunteerPasscode: "654321",
 };
 
-// Initial Mock Registrations (103 existing registrations)
-const INITIAL_MOCK_REGISTRATIONS: Registration[] = Array.from({ length: 103 }).map(
-  (_, i) => ({
-    id: `reg-${1000 + i}`,
-    uid: `user-${1000 + i}`,
-    name: `STUDENT DEMO ${i + 1}`,
-    email: `9923004${1000 + i}@klu.ac.in`,
-    registerNumber: `9923004${1000 + i}`,
-    phone: `98765${String(10000 + i).slice(0, 5)}`,
-    department: i % 2 === 0 ? "CSE" : "ECE",
-    year: i % 2 === 0 ? "III Year" : "II Year",
-    section: i % 2 === 0 ? "24S01" : "A",
-    residency: i % 2 === 0 ? "Hosteller" : "Day Scholar",
-    transactionId: `UPI${428000000000 + i}`,
-    paymentScreenshot:
-      "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80",
-    cloudinaryPublicId: `claim-group-3/payment-screenshots/9923004${1000 + i}`,
-    paymentStatus: i % 4 === 0 ? "Pending" : "Approved",
-    registrationStatus: "Registered",
-    createdAt: new Date(Date.now() - (103 - i) * 3600000).toISOString(),
-  })
-);
+// Initial Registrations (279 clean records including 17 new offline registrants)
+const INITIAL_MOCK_REGISTRATIONS: Registration[] = CLEAN_ALL_REGISTRATIONS;
 
 // Initial Attendance Sessions
 const INITIAL_MOCK_SESSIONS: AttendanceSession[] = [];
 
-const LOCAL_STORAGE_KEY_REGS = "csi_kare_registrations_v2";
-const LOCAL_STORAGE_KEY_SETTINGS = "csi_kare_settings_v2";
-const LOCAL_STORAGE_KEY_SESSIONS = "csi_kare_sessions_v2";
+const LOCAL_STORAGE_KEY_REGS = "csi_kare_registrations_v3";
+const LOCAL_STORAGE_KEY_SETTINGS = "csi_kare_settings_v3";
+const LOCAL_STORAGE_KEY_SESSIONS = "csi_kare_sessions_v3";
 
 function getLocalRegistrations(): Registration[] {
   if (typeof window === "undefined") return INITIAL_MOCK_REGISTRATIONS;
@@ -264,10 +248,26 @@ export function subscribeRegistrations(
       colRef,
       (snapshot) => {
         const list: Registration[] = [];
+        const existingIds = new Set<string>();
+        const existingRegNos = new Set<string>();
+
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as Registration;
           list.push({ ...data, id: docSnap.id });
+          existingIds.add(docSnap.id);
+          if (data.registerNumber) {
+            existingRegNos.add(String(data.registerNumber).trim().toLowerCase());
+          }
         });
+
+        // Fallback merge for any items from CLEAN_ALL_REGISTRATIONS not yet in snapshot
+        CLEAN_ALL_REGISTRATIONS.forEach((cleanItem) => {
+          const regNo = String(cleanItem.registerNumber).trim().toLowerCase();
+          if (!existingIds.has(cleanItem.id) && !existingRegNos.has(regNo)) {
+            list.push(cleanItem);
+          }
+        });
+
         saveLocalRegistrations(list);
         callback(list);
       },
@@ -641,19 +641,25 @@ export async function markAttendanceInSession(
   sessionId: string,
   regRecord: { regId: string; registerNumber: string; name: string }
 ): Promise<{ success: boolean; message: string; updatedSession?: AttendanceSession }> {
-  const sessions = getLocalSessions();
-  const sessionIndex = sessions.findIndex((s) => s.id === sessionId);
+  const localSessions = getLocalSessions();
+  let session = localSessions.find((s) => s.id === sessionId);
 
-  if (sessionIndex === -1) {
+  try {
+    const docRef = doc(db, "attendance_sessions", sessionId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      session = { ...snap.data(), id: snap.id } as AttendanceSession;
+    }
+  } catch (e) {}
+
+  if (!session) {
     return { success: false, message: "Attendance Session not found." };
   }
-
-  const session = sessions[sessionIndex];
 
   if (session.status === "closed") {
     return {
       success: false,
-      message: `SESSION CLOSED: '${session.sessionName}' is locked. No further attendance allowed.`,
+      message: `SESSION CLOSED: '${session.sessionName}' is locked. Attendance cannot be taken when session is closed.`,
     };
   }
 
@@ -675,7 +681,7 @@ export async function markAttendanceInSession(
   if (alreadyMarked) {
     return {
       success: false,
-      message: `Student (${regRecord.name} - ${regRecord.registerNumber}) is ALREADY marked PRESENT in '${session.sessionName}'.`,
+      message: `ALREADY MARKED PRESENT: Student (${regRecord.name} - ${regRecord.registerNumber}) is already recorded in '${session.sessionName}'.`,
     };
   }
 
@@ -688,17 +694,32 @@ export async function markAttendanceInSession(
 
   session.records = session.records || [];
   session.records.unshift(newRecord);
-  sessions[sessionIndex] = { ...session };
-  saveLocalSessions(sessions);
 
+  // Local cache update
+  const idx = localSessions.findIndex((s) => s.id === sessionId);
+  if (idx !== -1) {
+    localSessions[idx] = session;
+  } else {
+    localSessions.unshift(session);
+  }
+  saveLocalSessions(localSessions);
+
+  // Firestore atomic update for multi-device concurrency
   try {
     const docRef = doc(db, "attendance_sessions", sessionId);
-    await setDoc(docRef, session, { merge: true });
-  } catch (e) {}
+    await updateDoc(docRef, {
+      records: arrayUnion(newRecord),
+    });
+  } catch (e) {
+    try {
+      const docRef = doc(db, "attendance_sessions", sessionId);
+      await setDoc(docRef, session, { merge: true });
+    } catch (err) {}
+  }
 
   return {
     success: true,
-    message: `Attendance MARKED PRESENT for ${regRecord.name} (${regRecord.registerNumber}).`,
+    message: `MARKED PRESENT: Attendance recorded for ${regRecord.name} (${regRecord.registerNumber}).`,
     updatedSession: session,
   };
 }

@@ -132,6 +132,23 @@ export const EventSettingsModal: React.FC<EventSettingsModalProps> = ({
             </div>
 
             <div className="space-y-1 sm:col-span-2">
+              <label className="text-gray-400 font-orbitron flex items-center justify-between">
+                <span>Volunteer 6-Digit Passcode</span>
+                <span className="text-[10px] text-cyan-400">Used for URL/attend volunteer scanner access</span>
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="654321"
+                value={formState.volunteerPasscode || "654321"}
+                onChange={(e) =>
+                  setFormState({ ...formState, volunteerPasscode: e.target.value.trim() })
+                }
+                className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-extrabold font-mono tracking-widest text-base"
+              />
+            </div>
+
+            <div className="space-y-1 sm:col-span-2">
               <label className="text-gray-400 font-orbitron">Maximum Spots</label>
               <input
                 type="number"

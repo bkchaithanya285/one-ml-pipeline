@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-// In-Memory Database Store with Fallback Demo Records
+const { CLEAN_ALL_REGISTRATIONS } = require("./cleanRegistrationsData");
+
+// In-Memory Database Store with Fallback Records
 let eventSettings = {
   eventName: "ONE COMPLETE MACHINE LEARNING PIPELINE",
   organizedBy: "Computer Society of India (CSI) KARE Student Chapter",
@@ -20,31 +22,15 @@ let eventSettings = {
   eventTime: "10:00 AM IST",
   venue: "8th Block Seminar Hall",
   fee: 100,
-  maxSpots: 150,
+  maxSpots: 300,
   deadline: "2026-08-07T12:00:00.000Z",
   registrationEnabled: false,
   qrCodeUrl:
     "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=csikare@upi&pn=CSI%20KARE%20STUDENT%20CHAPTER&am=100&cu=INR",
 };
 
-// Initial Mock Registrations (103 records so remaining spots = 47 out of 150)
-let registrations = Array.from({ length: 103 }).map((_, i) => ({
-  id: `reg-${1000 + i}`,
-  uid: `user-${1000 + i}`,
-  name: `STUDENT DEMO ${i + 1}`,
-  email: `9923004${1000 + i}@klu.ac.in`,
-  registerNumber: `9923004${1000 + i}`,
-  phone: `98765${String(10000 + i).slice(0, 5)}`,
-  department: i % 3 === 0 ? "CSE (AI & ML)" : i % 2 === 0 ? "CSE" : "ECE",
-  year: i % 2 === 0 ? "III Year" : "II Year",
-  transactionId: `UPI${428000000000 + i}`,
-  paymentScreenshot:
-    "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400&q=80",
-  cloudinaryPublicId: `claim-group-3/payment-screenshots/9923004${1000 + i}`,
-  paymentStatus: i % 4 === 0 ? "Pending" : "Approved",
-  registrationStatus: "Registered",
-  createdAt: new Date(Date.now() - (103 - i) * 3600000).toISOString(),
-}));
+// Initial Registrations (279 clean records including 17 new offline registrants)
+let registrations = [...CLEAN_ALL_REGISTRATIONS];
 
 // ==========================================
 // ROUTES
